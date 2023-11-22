@@ -26,7 +26,7 @@ Small and lightweight Armoury Crate alternative for Asus laptops offering almost
 
 ### :zap: Features
 
-1. Performance modes: Silent - Balanced - Turbo (built-in, with default fan curves).
+1. Performance modes: Silent - Balanced - Turbo (built-in, with default fan curves)
 2. GPU modes: Eco - Standard - Ultimate - Optimized.
 3. Screen refresh rate control with display overdrive (OD) 
 4. Custom fan curve editor, power limits and turbo boost selection for every performance mode
