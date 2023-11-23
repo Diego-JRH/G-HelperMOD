@@ -10,7 +10,9 @@ namespace GHelper.UI
     {
 
         public static Color colorEco = Color.FromArgb(255, 6, 180, 138);
+		public static Color colorEco2 = Color.FromArgb(255, 232, 235, 52);
         public static Color colorStandard = Color.FromArgb(255, 58, 174, 239);
+		public static Color colorStandard2 = Color.FromArgb(255, 255, 128, 0);
         public static Color colorTurbo = Color.FromArgb(255, 255, 32, 32);
         public static Color colorCustom = Color.FromArgb(255, 255, 128, 0);
 
