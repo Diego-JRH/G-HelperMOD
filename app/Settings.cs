@@ -1171,7 +1171,8 @@ namespace GHelper
             {
                 case AsusACPI.GPUModeEco:
                     buttonOptimized.BorderColor = colorEco;
-                    buttonEco.Activated = !GPUAuto;
+					buttonEco.BorderColor = GPUAuto ? colorEco2 : colorEco;
+                    buttonEco.Activated = true;
                     buttonOptimized.Activated = GPUAuto;
                     labelGPU.Text = Properties.Strings.GPUMode + ": " + Properties.Strings.GPUModeEco;
                     Program.trayIcon.Icon = Properties.Resources.eco;
@@ -1185,7 +1186,8 @@ namespace GHelper
                     break;
                 default:
                     buttonOptimized.BorderColor = colorStandard;
-                    buttonStandard.Activated = !GPUAuto;
+					buttonStandard.BorderColor = GPUAuto ? colorStandard2 : colorStandard;
+                    buttonStandard.Activated = true;
                     buttonOptimized.Activated = GPUAuto;
                     labelGPU.Text = Properties.Strings.GPUMode + ": " + Properties.Strings.GPUModeStandard;
                     Program.trayIcon.Icon = Properties.Resources.standard;
