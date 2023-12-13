@@ -130,13 +130,14 @@ namespace GHelper.USB
             timer.Elapsed += Timer_Elapsed;
             isSingleColor = AppConfig.IsSingleColor(); // Mono Color
 
-            if (AppConfig.ContainsModel("GA402X") || AppConfig.ContainsModel("GA402N"))
+            if (AppConfig.ContainsModel("GA402X") || AppConfig.ContainsModel("GA402N") || AppConfig.ContainsModel("GA503R"))
             {
                 var device = AsusHid.FindDevices(AsusHid.AURA_ID).FirstOrDefault();
                 if (device is null) return;
                 Logger.WriteLine($"USB Version: {device.ReleaseNumberBcd} {device.ReleaseNumber}");
 
                 if (device.ReleaseNumberBcd >= 22 && device.ReleaseNumberBcd <= 25) isSingleColor = true;
+                if (AppConfig.ContainsModel("GA503R") && device.ReleaseNumberBcd == 3) isSingleColor = true;
             }
         }
 
@@ -633,13 +634,14 @@ namespace GHelper.USB
                 bound.Y += bound.Height / 3;
                 bound.Height -= (int)Math.Round(bound.Height * (0.33f + 0.022f)); // cut 1/3 of the top screen + windows panel
 
-                Bitmap screen_low  = AmbientData.CamptureScreen(bound, 512, 288);   //quality decreases greatly if it is less 512 ;
-                Bitmap screeb_pxl = AmbientData.ResizeImage(screen_low, 4, 2);     // 4x2 zone. top for keyboard and bot for lightbar;
+                Bitmap screen_low = screen_low = AmbientData.CamptureScreen(bound, 512, 288);   //quality decreases greatly if it is less 512 ;
+                Bitmap screeb_pxl;
 
                 int zones = AURA_ZONES;
 
                 if (isStrix) // laptop with lightbar
                 {
+                    screeb_pxl = AmbientData.ResizeImage(screen_low, 4, 2);     // 4x2 zone. top for keyboard and bot for lightbar
                     var mid_left = ColorUtils.GetMidColor(screeb_pxl.GetPixel(0, 1), screeb_pxl.GetPixel(1, 1));
                     var mid_right = ColorUtils.GetMidColor(screeb_pxl.GetPixel(2, 1), screeb_pxl.GetPixel(3, 1));
 
@@ -654,12 +656,12 @@ namespace GHelper.USB
                 else
                 {
                     zones = 1;
-                    AmbientData.Colors[0].RGB = ColorUtils.HSV.UpSaturation(ColorUtils.GetDominantColor(screeb_pxl), (float)0.3);
+                    screeb_pxl = AmbientData.ResizeImage(screen_low, 1, 1);
+                    AmbientData.Colors[0].RGB = ColorUtils.HSV.UpSaturation(screeb_pxl.GetPixel(0, 0), (float)0.3);
                 }
 
-                //screen_low.Save("big.jpg", ImageFormat.Jpeg);
-                //screeb_pxl.Save("small.jpg", ImageFormat.Jpeg);
 
+                //screeb_pxl.Save("test.jpg", ImageFormat.Jpeg);
                 screen_low.Dispose();
                 screeb_pxl.Dispose();
 

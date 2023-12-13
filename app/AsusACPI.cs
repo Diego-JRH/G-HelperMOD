@@ -536,7 +536,6 @@ public class AsusACPI
 
     public bool IsAllAmdPPT()
     {
-        //return false; 
         return DeviceGet(PPT_CPUB0) >= 0 && DeviceGet(PPT_GPUC0) < 0;
     }
 

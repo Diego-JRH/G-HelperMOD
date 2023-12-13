@@ -31,14 +31,14 @@ namespace GHelper
         /// </summary>
         private void InitializeComponent()
         {
-            ChartArea chartArea17 = new ChartArea();
-            Title title17 = new Title();
-            ChartArea chartArea18 = new ChartArea();
-            Title title18 = new Title();
-            ChartArea chartArea19 = new ChartArea();
-            Title title19 = new Title();
-            ChartArea chartArea20 = new ChartArea();
-            Title title20 = new Title();
+            ChartArea chartArea1 = new ChartArea();
+            Title title1 = new Title();
+            ChartArea chartArea2 = new ChartArea();
+            Title title2 = new Title();
+            ChartArea chartArea3 = new ChartArea();
+            Title title3 = new Title();
+            ChartArea chartArea4 = new ChartArea();
+            Title title4 = new Title();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Fans));
             panelFans = new Panel();
             labelTip = new Label();
@@ -141,10 +141,6 @@ namespace GHelper
             buttonAdvanced = new RButton();
             buttonGPU = new RButton();
             buttonCPU = new RButton();
-            panelA3 = new Panel();
-            labelA3 = new Label();
-            labelLeftA3 = new Label();
-            trackA3 = new TrackBar();
             panelFans.SuspendLayout();
             tableFanCharts.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)chartGPU).BeginInit();
@@ -199,8 +195,6 @@ namespace GHelper
             ((System.ComponentModel.ISupportInitialize)pictureGPU).BeginInit();
             panelNav.SuspendLayout();
             tableNav.SuspendLayout();
-            panelA3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)trackA3).BeginInit();
             SuspendLayout();
             // 
             // panelFans
@@ -257,8 +251,8 @@ namespace GHelper
             // 
             // chartGPU
             // 
-            chartArea17.Name = "ChartArea1";
-            chartGPU.ChartAreas.Add(chartArea17);
+            chartArea1.Name = "ChartArea1";
+            chartGPU.ChartAreas.Add(chartArea1);
             chartGPU.Dock = DockStyle.Fill;
             chartGPU.Location = new Point(12, 493);
             chartGPU.Margin = new Padding(2, 10, 2, 10);
@@ -266,13 +260,13 @@ namespace GHelper
             chartGPU.Size = new Size(782, 463);
             chartGPU.TabIndex = 17;
             chartGPU.Text = "chartGPU";
-            title17.Name = "Title1";
-            chartGPU.Titles.Add(title17);
+            title1.Name = "Title1";
+            chartGPU.Titles.Add(title1);
             // 
             // chartCPU
             // 
-            chartArea18.Name = "ChartArea1";
-            chartCPU.ChartAreas.Add(chartArea18);
+            chartArea2.Name = "ChartArea1";
+            chartCPU.ChartAreas.Add(chartArea2);
             chartCPU.Dock = DockStyle.Fill;
             chartCPU.Location = new Point(12, 10);
             chartCPU.Margin = new Padding(2, 10, 2, 10);
@@ -280,13 +274,13 @@ namespace GHelper
             chartCPU.Size = new Size(782, 463);
             chartCPU.TabIndex = 14;
             chartCPU.Text = "chartCPU";
-            title18.Name = "Title1";
-            chartCPU.Titles.Add(title18);
+            title2.Name = "Title1";
+            chartCPU.Titles.Add(title2);
             // 
             // chartXGM
             // 
-            chartArea19.Name = "ChartAreaXGM";
-            chartXGM.ChartAreas.Add(chartArea19);
+            chartArea3.Name = "ChartAreaXGM";
+            chartXGM.ChartAreas.Add(chartArea3);
             chartXGM.Dock = DockStyle.Fill;
             chartXGM.Location = new Point(12, 1459);
             chartXGM.Margin = new Padding(2, 10, 2, 10);
@@ -294,14 +288,14 @@ namespace GHelper
             chartXGM.Size = new Size(782, 463);
             chartXGM.TabIndex = 14;
             chartXGM.Text = "chartXGM";
-            title19.Name = "Title4";
-            chartXGM.Titles.Add(title19);
+            title3.Name = "Title4";
+            chartXGM.Titles.Add(title3);
             chartXGM.Visible = false;
             // 
             // chartMid
             // 
-            chartArea20.Name = "ChartArea3";
-            chartMid.ChartAreas.Add(chartArea20);
+            chartArea4.Name = "ChartArea3";
+            chartMid.ChartAreas.Add(chartArea4);
             chartMid.Dock = DockStyle.Fill;
             chartMid.Location = new Point(12, 976);
             chartMid.Margin = new Padding(2, 10, 2, 10);
@@ -309,8 +303,8 @@ namespace GHelper
             chartMid.Size = new Size(782, 463);
             chartMid.TabIndex = 14;
             chartMid.Text = "chartMid";
-            title20.Name = "Title3";
-            chartMid.Titles.Add(title20);
+            title4.Name = "Title3";
+            chartMid.Titles.Add(title4);
             chartMid.Visible = false;
             // 
             // panelTitleFans
@@ -529,7 +523,7 @@ namespace GHelper
             panelAdvanced.Controls.Add(panelTemperature);
             panelAdvanced.Controls.Add(panelTitleTemp);
             panelAdvanced.Dock = DockStyle.Top;
-            panelAdvanced.Location = new Point(10, 1644);
+            panelAdvanced.Location = new Point(10, 1520);
             panelAdvanced.Name = "panelAdvanced";
             panelAdvanced.Size = new Size(520, 888);
             panelAdvanced.TabIndex = 14;
@@ -820,7 +814,6 @@ namespace GHelper
             panelPower.Controls.Add(panelApplyPower);
             panelPower.Controls.Add(panelB0);
             panelPower.Controls.Add(panelC1);
-            panelPower.Controls.Add(panelA3);
             panelPower.Controls.Add(panelA0);
             panelPower.Controls.Add(panelTitleCPU);
             panelPower.Controls.Add(panelBoost);
@@ -831,7 +824,7 @@ namespace GHelper
             panelPower.Location = new Point(10, 764);
             panelPower.Margin = new Padding(4);
             panelPower.Name = "panelPower";
-            panelPower.Size = new Size(520, 880);
+            panelPower.Size = new Size(520, 756);
             panelPower.TabIndex = 43;
             // 
             // panelApplyPower
@@ -839,7 +832,7 @@ namespace GHelper
             panelApplyPower.AutoSize = true;
             panelApplyPower.Controls.Add(checkApplyPower);
             panelApplyPower.Dock = DockStyle.Top;
-            panelApplyPower.Location = new Point(0, 804);
+            panelApplyPower.Location = new Point(0, 680);
             panelApplyPower.Name = "panelApplyPower";
             panelApplyPower.Padding = new Padding(15);
             panelApplyPower.Size = new Size(520, 76);
@@ -866,7 +859,7 @@ namespace GHelper
             panelB0.Controls.Add(labelLeftB0);
             panelB0.Controls.Add(trackB0);
             panelB0.Dock = DockStyle.Top;
-            panelB0.Location = new Point(0, 680);
+            panelB0.Location = new Point(0, 556);
             panelB0.Margin = new Padding(4);
             panelB0.MaximumSize = new Size(0, 124);
             panelB0.Name = "panelB0";
@@ -915,7 +908,7 @@ namespace GHelper
             panelC1.Controls.Add(labelLeftC1);
             panelC1.Controls.Add(trackC1);
             panelC1.Dock = DockStyle.Top;
-            panelC1.Location = new Point(0, 556);
+            panelC1.Location = new Point(0, 432);
             panelC1.Margin = new Padding(4);
             panelC1.MaximumSize = new Size(0, 124);
             panelC1.Name = "panelC1";
@@ -979,7 +972,7 @@ namespace GHelper
             labelA0.Name = "labelA0";
             labelA0.Size = new Size(116, 32);
             labelA0.TabIndex = 12;
-            labelA0.Text = "SPL";
+            labelA0.Text = "SPPT";
             labelA0.TextAlign = ContentAlignment.TopRight;
             // 
             // labelLeftA0
@@ -988,9 +981,9 @@ namespace GHelper
             labelLeftA0.Location = new Point(10, 10);
             labelLeftA0.Margin = new Padding(4, 0, 4, 0);
             labelLeftA0.Name = "labelLeftA0";
-            labelLeftA0.Size = new Size(51, 32);
+            labelLeftA0.Size = new Size(66, 32);
             labelLeftA0.TabIndex = 11;
-            labelLeftA0.Text = "SPL";
+            labelLeftA0.Text = "SPPT";
             // 
             // trackA0
             // 
@@ -1534,55 +1527,6 @@ namespace GHelper
             buttonCPU.TextImageRelation = TextImageRelation.ImageBeforeText;
             buttonCPU.UseVisualStyleBackColor = false;
             // 
-            // panelA3
-            // 
-            panelA3.AutoSize = true;
-            panelA3.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            panelA3.Controls.Add(labelA3);
-            panelA3.Controls.Add(labelLeftA3);
-            panelA3.Controls.Add(trackA3);
-            panelA3.Dock = DockStyle.Top;
-            panelA3.Location = new Point(0, 432);
-            panelA3.Margin = new Padding(4);
-            panelA3.MaximumSize = new Size(0, 124);
-            panelA3.Name = "panelA3";
-            panelA3.Size = new Size(520, 124);
-            panelA3.TabIndex = 51;
-            // 
-            // labelA3
-            // 
-            labelA3.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
-            labelA3.Location = new Point(396, 10);
-            labelA3.Margin = new Padding(4, 0, 4, 0);
-            labelA3.Name = "labelA3";
-            labelA3.Size = new Size(116, 32);
-            labelA3.TabIndex = 12;
-            labelA3.Text = "SPPT";
-            labelA3.TextAlign = ContentAlignment.TopRight;
-            // 
-            // labelLeftA3
-            // 
-            labelLeftA3.AutoSize = true;
-            labelLeftA3.Location = new Point(10, 10);
-            labelLeftA3.Margin = new Padding(4, 0, 4, 0);
-            labelLeftA3.Name = "labelLeftA3";
-            labelLeftA3.Size = new Size(66, 32);
-            labelLeftA3.TabIndex = 11;
-            labelLeftA3.Text = "SPPT";
-            // 
-            // trackA3
-            // 
-            trackA3.Location = new Point(6, 48);
-            trackA3.Margin = new Padding(4, 2, 4, 2);
-            trackA3.Maximum = 180;
-            trackA3.Minimum = 10;
-            trackA3.Name = "trackA3";
-            trackA3.Size = new Size(508, 90);
-            trackA3.TabIndex = 10;
-            trackA3.TickFrequency = 5;
-            trackA3.TickStyle = TickStyle.TopLeft;
-            trackA3.Value = 125;
-            // 
             // Fans
             // 
             AutoScaleDimensions = new SizeF(192F, 192F);
@@ -1679,9 +1623,6 @@ namespace GHelper
             ((System.ComponentModel.ISupportInitialize)pictureGPU).EndInit();
             panelNav.ResumeLayout(false);
             tableNav.ResumeLayout(false);
-            panelA3.ResumeLayout(false);
-            panelA3.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)trackA3).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -1789,9 +1730,5 @@ namespace GHelper
         private TrackBar trackGPUClockLimit;
         private Label labelGPUClockLimitTitle;
         private RButton buttonCalibrate;
-        private Panel panelA3;
-        private Label labelA3;
-        private Label labelLeftA3;
-        private TrackBar trackA3;
     }
 }
