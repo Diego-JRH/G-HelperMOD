@@ -604,16 +604,7 @@ namespace GHelper
 
         private void PictureColor2_Click(object? sender, EventArgs e)
         {
-
-            ColorDialog colorDlg = new ColorDialog();
-            colorDlg.AllowFullOpen = true;
-            colorDlg.Color = pictureColor2.BackColor;
-
-            if (colorDlg.ShowDialog() == DialogResult.OK)
-            {
-                AppConfig.Set("aura_color2", colorDlg.Color.ToArgb());
-                SetAura();
-            }
+            SetColorPicker("aura_color2");
         }
 
         private void PictureColor_Click(object? sender, EventArgs e)
@@ -681,18 +672,29 @@ namespace GHelper
             FansToggle();
         }
 
-        private void ButtonKeyboardColor_Click(object? sender, EventArgs e)
+        private void SetColorPicker(string colorField = "aura_color") 
         {
-
             ColorDialog colorDlg = new ColorDialog();
             colorDlg.AllowFullOpen = true;
             colorDlg.Color = pictureColor.BackColor;
 
+            try
+            {
+                colorDlg.CustomColors = AppConfig.GetString("aura_color_custom", "").Split('-').Select(int.Parse).ToArray();
+            }
+            catch (Exception ex) { }
+
             if (colorDlg.ShowDialog() == DialogResult.OK)
             {
-                AppConfig.Set("aura_color", colorDlg.Color.ToArgb());
+                AppConfig.Set("aura_color_custom", string.Join("-", colorDlg.CustomColors));
+                AppConfig.Set(colorField, colorDlg.Color.ToArgb());
                 SetAura();
             }
+        }
+
+        private void ButtonKeyboardColor_Click(object? sender, EventArgs e)
+        {
+            SetColorPicker("aura_color");
         }
 
         public void InitAura()
@@ -758,6 +760,15 @@ namespace GHelper
             checkMatrix.Checked = AppConfig.Is("matrix_auto");
             checkMatrix.CheckedChanged += CheckMatrix_CheckedChanged;
 
+        }
+
+
+        public void CycleMatrix(int delta)
+        {
+            comboMatrix.SelectedIndex = Math.Min(Math.Max(0, comboMatrix.SelectedIndex + delta), comboMatrix.Items.Count - 1);
+            AppConfig.Set("matrix_brightness", comboMatrix.SelectedIndex);
+            matrixControl.SetMatrix();
+            Program.toast.RunToast(comboMatrix.GetItemText(comboMatrix.SelectedItem), delta > 0 ? ToastIcon.BacklightUp : ToastIcon.BacklightDown);
         }
 
 

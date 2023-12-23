@@ -584,6 +584,9 @@ namespace GHelper.Input
                     case 55:    // Arconym
                         KeyProcess("m6");
                         return;
+                    case 136:    // FN + F12
+                        Program.acpi.DeviceSet(AsusACPI.UniversalControl, AsusACPI.Airplane, "Airplane");
+                        return;
                     case 181:    // FN + Numpad Enter
                         KeyProcess("fne");
                         return;
@@ -634,13 +637,19 @@ namespace GHelper.Input
             {
                 case 16: // FN+F7
                     if (Control.ModifierKeys == Keys.Shift)
-                        SetScreenpad(-10);
+                    {
+                        if (AppConfig.IsDUO()) SetScreenpad(-10);
+                        else Program.settingsForm.BeginInvoke(Program.settingsForm.CycleMatrix, -1);
+                    }
                     else
                         Program.acpi.DeviceSet(AsusACPI.UniversalControl, AsusACPI.Brightness_Down, "Brightness");
                     break;
                 case 32: // FN+F8
                     if (Control.ModifierKeys == Keys.Shift)
-                        SetScreenpad(10);
+                    {
+                        if (AppConfig.IsDUO()) SetScreenpad(10);
+                        else Program.settingsForm.BeginInvoke(Program.settingsForm.CycleMatrix, 1);
+                    }
                     else
                         Program.acpi.DeviceSet(AsusACPI.UniversalControl, AsusACPI.Brightness_Up, "Brightness");
                     break;
