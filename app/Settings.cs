@@ -1,4 +1,5 @@
-﻿using GHelper.AnimeMatrix;
+﻿using GHelper.Ally;
+using GHelper.AnimeMatrix;
 using GHelper.AutoUpdate;
 using GHelper.Battery;
 using GHelper.Display;
@@ -23,6 +24,7 @@ namespace GHelper
 
         public GPUModeControl gpuControl;
         ScreenControl screenControl = new ScreenControl();
+        AllyControl controllerControl;
         AutoUpdateControl updateControl;
 
         AsusMouseSettings? mouseSettings;
@@ -54,6 +56,7 @@ namespace GHelper
             gpuControl = new GPUModeControl(this);
             updateControl = new AutoUpdateControl(this);
             matrixControl = new AniMatrixControl(this);
+            controllerControl = new AllyControl(this);
 
             buttonSilent.Text = Properties.Strings.Silent;
             buttonBalanced.Text = Properties.Strings.Balanced;
@@ -86,6 +89,33 @@ namespace GHelper
             buttonMatrix.Text = Properties.Strings.PictureGif;
             buttonQuit.Text = Properties.Strings.Quit;
             buttonUpdates.Text = Properties.Strings.Updates;
+
+            // Accessible Labels
+
+            panelMatrix.AccessibleName = Properties.Strings.AnimeMatrix;
+            sliderBattery.AccessibleName = Properties.Strings.BatteryChargeLimit;
+            buttonQuit.AccessibleName = Properties.Strings.Quit;
+            buttonUpdates.AccessibleName = Properties.Strings.BiosAndDriverUpdates;
+            panelPerformance.AccessibleName = Properties.Strings.PerformanceMode;
+            buttonSilent.AccessibleName = Properties.Strings.Silent;
+            buttonBalanced.AccessibleName = Properties.Strings.Balanced;
+            buttonTurbo.AccessibleName = Properties.Strings.Turbo;
+            buttonFans.AccessibleName = Properties.Strings.FansAndPower;
+            panelGPU.AccessibleName = Properties.Strings.GPUMode;
+            buttonEco.AccessibleName = Properties.Strings.EcoMode;
+            buttonStandard.AccessibleName = Properties.Strings.StandardMode;
+            buttonOptimized.AccessibleName = Properties.Strings.Optimized;
+            buttonUltimate.AccessibleName = Properties.Strings.UltimateMode;
+            panelScreen.AccessibleName = Properties.Strings.LaptopScreen;
+
+            buttonScreenAuto.AccessibleName = Properties.Strings.AutoMode;
+            //button60Hz.AccessibleName = "60Hz Refresh Rate";
+            //button120Hz.AccessibleName = "Maximum Refresh Rate";
+            
+            panelKeyboard.AccessibleName = Properties.Strings.LaptopKeyboard;
+            buttonKeyboard.AccessibleName = Properties.Strings.ExtraSettings;
+            buttonKeyboardColor.AccessibleName = Properties.Strings.LaptopKeyboard + " " + Properties.Strings.Color;
+            comboKeyboard.AccessibleName = Properties.Strings.LaptopBacklight;
 
             FormClosing += SettingsForm_FormClosing;
             Deactivate += SettingsForm_LostFocus;
@@ -200,6 +230,8 @@ namespace GHelper
             buttonBatteryFull.MouseLeave += ButtonBatteryFull_MouseLeave;
             buttonBatteryFull.Click += ButtonBatteryFull_Click;
 
+            buttonController.Click += ButtonController_Click;
+
             Text = "G-Helper " + (ProcessHelper.IsUserAdministrator() ? "—" : "-") + " " + AppConfig.GetModelShort();
             TopMost = AppConfig.Is("topmost");
 
@@ -211,6 +243,32 @@ namespace GHelper
             buttonFnLock.Click += ButtonFnLock_Click;
 
             panelPerformance.Focus();
+        }
+
+        private void ButtonController_Click(object? sender, EventArgs e)
+        {
+            controllerControl.ToggleMode();
+        }
+
+        public void VisualiseAlly(bool visible = false)
+        {
+            panelAlly.Visible = visible;
+        }
+
+        public void VisualiseController(ControllerMode mode)
+        {
+            switch (mode)
+            {
+                case ControllerMode.Gamepad:
+                    buttonController.Text = "Gamepad";
+                    break;
+                case ControllerMode.WASD:
+                    buttonController.Text = "WASD";
+                    break;
+                case ControllerMode.Mouse:
+                    buttonController.Text = "Mouse";
+                    break;
+            }
         }
 
         private void SettingsForm_LostFocus(object? sender, EventArgs e)
@@ -444,11 +502,17 @@ namespace GHelper
 
         public void SetVersionLabel(string label, bool update = false)
         {
-            Invoke(delegate
+            if (InvokeRequired)
+                Invoke(delegate
+                {
+                    labelVersion.Text = label;
+                    if (update) labelVersion.ForeColor = colorTurbo;
+                });
+            else
             {
                 labelVersion.Text = label;
                 if (update) labelVersion.ForeColor = colorTurbo;
-            });
+            }
         }
 
 
@@ -632,18 +696,14 @@ namespace GHelper
 
         public void FansInit()
         {
-            Invoke(delegate
-            {
-                if (fansForm != null && fansForm.Text != "") fansForm.InitAll();
-            });
+            if (fansForm == null || fansForm.Text == "") return;
+            Invoke(fansForm.InitAll);
         }
 
         public void GPUInit()
         {
-            Invoke(delegate
-            {
-                if (fansForm != null && fansForm.Text != "") fansForm.InitGPU();
-            });
+            if (fansForm == null || fansForm.Text == "") return;
+            Invoke(fansForm.InitGPU);
         }
 
         public void FansToggle(int index = 0)
@@ -737,12 +797,19 @@ namespace GHelper
 
         public void VisualiseAura()
         {
-            Invoke(delegate
+            if (InvokeRequired)
+                Invoke(delegate
+                {
+                    pictureColor.BackColor = Aura.Color1;
+                    pictureColor2.BackColor = Aura.Color2;
+                    pictureColor2.Visible = Aura.HasSecondColor();
+                });
+            else
             {
                 pictureColor.BackColor = Aura.Color1;
                 pictureColor2.BackColor = Aura.Color2;
                 pictureColor2.Visible = Aura.HasSecondColor();
-            });
+            }
         }
 
         public void InitMatrix()
@@ -974,18 +1041,19 @@ namespace GHelper
             if (gpuTemp.Length > 0) trayTip += "\nGPU" + gpuTemp + " " + HardwareControl.gpuFan;
             if (battery.Length > 0) trayTip += "\n" + battery;
 
-            Program.settingsForm.BeginInvoke(delegate
-            {
-                labelCPUFan.Text = "CPU" + cpuTemp + " " + HardwareControl.cpuFan;
-                labelGPUFan.Text = "GPU" + gpuTemp + " " + HardwareControl.gpuFan;
-                if (HardwareControl.midFan is not null)
-                    labelMidFan.Text = "Mid " + HardwareControl.midFan;
+            if (Program.settingsForm.IsHandleCreated)
+                Program.settingsForm.BeginInvoke(delegate
+                {
+                    labelCPUFan.Text = "CPU" + cpuTemp + " " + HardwareControl.cpuFan;
+                    labelGPUFan.Text = "GPU" + gpuTemp + " " + HardwareControl.gpuFan;
+                    if (HardwareControl.midFan is not null)
+                        labelMidFan.Text = "Mid " + HardwareControl.midFan;
 
-                labelBattery.Text = battery;
-                if (!batteryMouseOver && !batteryFullMouseOver) labelCharge.Text = charge;
+                    labelBattery.Text = battery;
+                    if (!batteryMouseOver && !batteryFullMouseOver) labelCharge.Text = charge;
 
-                //panelPerformance.AccessibleName = labelPerf.Text + " " + trayTip;
-            });
+                    //panelPerformance.AccessibleName = labelPerf.Text + " " + trayTip;
+                });
 
 
             Program.trayIcon.Text = trayTip;
@@ -1000,52 +1068,67 @@ namespace GHelper
 
         public void ShowMode(int mode)
         {
-            Invoke(delegate
-            {
-                buttonSilent.Activated = false;
-                buttonBalanced.Activated = false;
-                buttonTurbo.Activated = false;
-                buttonFans.Activated = false;
-
-                menuSilent.Checked = false;
-                menuBalanced.Checked = false;
-                menuTurbo.Checked = false;
-
-                switch (mode)
+            if (InvokeRequired)
+                Invoke(delegate
                 {
-                    case AsusACPI.PerformanceSilent:
-                        buttonSilent.Activated = true;
-                        menuSilent.Checked = true;
-                        break;
-                    case AsusACPI.PerformanceTurbo:
-                        buttonTurbo.Activated = true;
-                        menuTurbo.Checked = true;
-                        break;
-                    case AsusACPI.PerformanceBalanced:
-                        buttonBalanced.Activated = true;
-                        menuBalanced.Checked = true;
-                        break;
-                    default:
-                        buttonFans.Activated = true;
-                        buttonFans.BorderColor = Modes.GetBase(mode) switch
-                        {
-                            AsusACPI.PerformanceSilent => colorEco,
-                            AsusACPI.PerformanceTurbo => colorTurbo,
-                            _ => colorStandard,
-                        };
-                        break;
-                }
-            });
+                    VisualiseMode(mode);
+                });
+            else
+                VisualiseMode(mode);
+        }
+
+        protected void VisualiseMode(int mode)
+        {
+            buttonSilent.Activated = false;
+            buttonBalanced.Activated = false;
+            buttonTurbo.Activated = false;
+            buttonFans.Activated = false;
+
+            menuSilent.Checked = false;
+            menuBalanced.Checked = false;
+            menuTurbo.Checked = false;
+
+            switch (mode)
+            {
+                case AsusACPI.PerformanceSilent:
+                    buttonSilent.Activated = true;
+                    menuSilent.Checked = true;
+                    break;
+                case AsusACPI.PerformanceTurbo:
+                    buttonTurbo.Activated = true;
+                    menuTurbo.Checked = true;
+                    break;
+                case AsusACPI.PerformanceBalanced:
+                    buttonBalanced.Activated = true;
+                    menuBalanced.Checked = true;
+                    break;
+                default:
+                    buttonFans.Activated = true;
+                    buttonFans.BorderColor = Modes.GetBase(mode) switch
+                    {
+                        AsusACPI.PerformanceSilent => colorEco,
+                        AsusACPI.PerformanceTurbo => colorTurbo,
+                        _ => colorStandard,
+                    };
+                    break;
+            }
         }
 
 
         public void SetModeLabel(string modeText)
         {
-            Invoke(delegate
+            if (InvokeRequired)
+            {
+                Invoke(delegate { 
+                    labelPerf.Text = modeText;
+                    panelPerformance.AccessibleName = labelPerf.Text;
+                });
+            } else
             {
                 labelPerf.Text = modeText;
-                panelPerformance.AccessibleName = labelPerf.Text; // + ". " + Program.trayIcon.Text;
-            });
+                panelPerformance.AccessibleName = labelPerf.Text;
+            }
+
         }
 
 
@@ -1186,13 +1269,11 @@ namespace GHelper
                     buttonOptimized.Activated = GPUAuto;
                     labelGPU.Text = Properties.Strings.GPUMode + ": " + Properties.Strings.GPUModeEco;
                     Program.trayIcon.Icon = Properties.Resources.eco;
-                    IconHelper.SetIcon(this, Properties.Resources.dot_eco);
                     break;
                 case AsusACPI.GPUModeUltimate:
                     buttonUltimate.Activated = true;
                     labelGPU.Text = Properties.Strings.GPUMode + ": " + Properties.Strings.GPUModeUltimate;
                     Program.trayIcon.Icon = Properties.Resources.ultimate;
-                    IconHelper.SetIcon(this, Properties.Resources.dot_ultimate);
                     break;
                 default:
                     buttonOptimized.BorderColor = colorStandard;
@@ -1201,7 +1282,6 @@ namespace GHelper
                     buttonOptimized.Activated = GPUAuto;
                     labelGPU.Text = Properties.Strings.GPUMode + ": " + Properties.Strings.GPUModeStandard;
                     Program.trayIcon.Icon = Properties.Resources.standard;
-                    IconHelper.SetIcon(this, Properties.Resources.dot_standard);
                     break;
             }
 
@@ -1245,6 +1325,10 @@ namespace GHelper
         {
             labelBatteryTitle.Text = Properties.Strings.BatteryChargeLimit + ": " + limit.ToString() + "%";
             sliderBattery.Value = limit;
+
+            sliderBattery.AccessibleName = Properties.Strings.BatteryChargeLimit + ": " + limit.ToString() + "%";
+            sliderBattery.AccessibilityObject.Select(AccessibleSelection.TakeFocus);
+
             VisualiseBatteryFull();
         }
 
@@ -1254,11 +1338,13 @@ namespace GHelper
             {
                 buttonBatteryFull.BackColor = colorStandard;
                 buttonBatteryFull.ForeColor = SystemColors.ControlLightLight;
+                buttonBatteryFull.AccessibleName = Properties.Strings.BatteryChargeLimit + "100% on";
             }
             else
             {
                 buttonBatteryFull.BackColor = buttonSecond;
                 buttonBatteryFull.ForeColor = SystemColors.ControlDark;
+                buttonBatteryFull.AccessibleName = Properties.Strings.BatteryChargeLimit + "100% off";
             }
 
         }
@@ -1404,11 +1490,13 @@ namespace GHelper
             {
                 buttonFnLock.BackColor = colorStandard;
                 buttonFnLock.ForeColor = SystemColors.ControlLightLight;
+                buttonFnLock.AccessibleName = "Fn-Lock on";
             }
             else
             {
                 buttonFnLock.BackColor = buttonSecond;
                 buttonFnLock.ForeColor = SystemColors.ControlDark;
+                buttonFnLock.AccessibleName = "Fn-Lock off";
             }
         }
 

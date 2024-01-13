@@ -429,7 +429,9 @@ namespace GHelper.Input
                     NativeMethods.TurnOffScreen();
                     break;
                 case "miniled":
-                    screenControl.ToogleMiniled();
+                    if (ScreenCCD.GetHDRStatus()) return;
+                    int miniled = screenControl.ToogleMiniled();
+                    Program.toast.RunToast(miniled == 1 ? "Multi-Zone" : "Single-Zone", miniled == 1 ? ToastIcon.BrightnessUp : ToastIcon.BrightnessDown);
                     break;
                 case "aura":
                     Program.settingsForm.BeginInvoke(Program.settingsForm.CycleAuraMode);

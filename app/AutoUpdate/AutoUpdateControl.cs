@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using GHelper.Helpers;
+using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using System.Text.Json;
@@ -107,6 +108,7 @@ namespace GHelper.AutoUpdate
 
             string exeLocation = Application.ExecutablePath;
             string exeDir = Path.GetDirectoryName(exeLocation);
+            string exeName = Path.GetFileName(exeLocation);
             string zipLocation = exeDir + "\\" + zipName;
 
             using (WebClient client = new WebClient())
@@ -114,15 +116,28 @@ namespace GHelper.AutoUpdate
                 client.DownloadFile(uri, zipLocation);
 
                 Logger.WriteLine(requestUri);
-                Logger.WriteLine(zipLocation);
-                Logger.WriteLine(exeLocation);
+                Logger.WriteLine(exeDir);
+                Logger.WriteLine(zipName);
+                Logger.WriteLine(exeName);
 
-                var cmd = new Process();
-                cmd.StartInfo.UseShellExecute = false;
-                cmd.StartInfo.CreateNoWindow = true;
-                cmd.StartInfo.FileName = "powershell";
-                cmd.StartInfo.Arguments = $"Start-Sleep -Seconds 1; Expand-Archive {zipLocation} -DestinationPath {exeDir} -Force; Remove-Item {zipLocation} -Force; {exeLocation}";
-                cmd.Start();
+                string command = $"Start-Sleep -Seconds 1; $ErrorActionPreference = \"Stop\"; Expand-Archive \"{zipName}\" -DestinationPath . -Force; Remove-Item \"{zipName}\" -Force; \".\\{exeName}\"; ";
+                Logger.WriteLine(command);
+
+                try
+                {
+                    var cmd = new Process();
+                    cmd.StartInfo.WorkingDirectory = exeDir;
+                    cmd.StartInfo.UseShellExecute = false;
+                    cmd.StartInfo.CreateNoWindow = true;
+                    cmd.StartInfo.FileName = "powershell";
+                    cmd.StartInfo.Arguments = command;
+                    if (ProcessHelper.IsUserAdministrator()) cmd.StartInfo.Verb = "runas";
+                    cmd.Start();
+                }
+                catch (Exception ex)
+                {
+                    Logger.WriteLine(ex.Message);
+                }
 
                 Application.Exit();
             }
