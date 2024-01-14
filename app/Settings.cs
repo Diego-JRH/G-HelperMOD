@@ -1269,11 +1269,13 @@ namespace GHelper
                     buttonOptimized.Activated = GPUAuto;
                     labelGPU.Text = Properties.Strings.GPUMode + ": " + Properties.Strings.GPUModeEco;
                     Program.trayIcon.Icon = Properties.Resources.eco;
+					IconHelper.SetIcon(this, Properties.Resources.dot_eco);
                     break;
                 case AsusACPI.GPUModeUltimate:
                     buttonUltimate.Activated = true;
                     labelGPU.Text = Properties.Strings.GPUMode + ": " + Properties.Strings.GPUModeUltimate;
                     Program.trayIcon.Icon = Properties.Resources.ultimate;
+					IconHelper.SetIcon(this, Properties.Resources.dot_ultimate);
                     break;
                 default:
                     buttonOptimized.BorderColor = colorStandard;
@@ -1282,6 +1284,7 @@ namespace GHelper
                     buttonOptimized.Activated = GPUAuto;
                     labelGPU.Text = Properties.Strings.GPUMode + ": " + Properties.Strings.GPUModeStandard;
                     Program.trayIcon.Icon = Properties.Resources.standard;
+					IconHelper.SetIcon(this, Properties.Resources.dot_standard);
                     break;
             }
 
