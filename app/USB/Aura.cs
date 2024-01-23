@@ -105,6 +105,15 @@ namespace GHelper.USB
             { AuraMode.AMBIENT, "Ambient"},
         };
 
+        private static Dictionary<AuraMode, string> _modesAlly = new Dictionary<AuraMode, string>
+        {
+            { AuraMode.AuraStatic, Properties.Strings.AuraStatic },
+            { AuraMode.AuraBreathe, Properties.Strings.AuraBreathe },
+            { AuraMode.AuraColorCycle, Properties.Strings.AuraColorCycle },
+            { AuraMode.AuraRainbow, Properties.Strings.AuraRainbow },
+            { AuraMode.AuraStrobe, Properties.Strings.AuraStrobe },
+        };
+
         private static Dictionary<AuraMode, string> _modesStrix = new Dictionary<AuraMode, string>
         {
             { AuraMode.AuraStatic, Properties.Strings.AuraStatic },
@@ -159,6 +168,11 @@ namespace GHelper.USB
             if (isSingleColor)
             {
                 return _modesSingleColor;
+            }
+
+            if (AppConfig.IsAlly())
+            {
+                return _modesAlly;
             }
 
             if (AppConfig.IsAdvantageEdition())
@@ -247,12 +261,29 @@ namespace GHelper.USB
         public static void Init()
         {
             AsusHid.Write(new List<byte[]> {
-                new byte[] { AsusHid.AURA_ID, 0xb9 },
+                new byte[] { AsusHid.AURA_ID, 0xB9 },
                 Encoding.ASCII.GetBytes("]ASUS Tech.Inc."),
-                new byte[] { AsusHid.AURA_ID, 0x05, 0x20, 0x31, 0, 0x1a },
-                //Encoding.ASCII.GetBytes("^ASUS Tech.Inc."),
-                //new byte[] { 0x5e, 0x05, 0x20, 0x31, 0, 0x1a }
+                new byte[] { AsusHid.AURA_ID, 0x05, 0x20, 0x31, 0, 0x1A },
             }, "Init");
+
+            // Random data AC sends to keyboard on start, that seem to wake up keyboard on 2024 
+            if (AppConfig.IsNewAura())
+            {
+                AsusHid.Write(new List<byte[]> {
+                    new byte[] { AsusHid.AURA_ID, 0x9F, 0x01 },
+                    new byte[] { AsusHid.AURA_ID, 0xBF },
+
+                    new byte[] { AsusHid.AURA_ID, 0x05, 0x20, 0x31, 0, 0x10 },
+                    new byte[] { AsusHid.AURA_ID, 0x05, 0x20, 0x31, 0, 0x20 },
+
+                    new byte[] { AsusHid.AURA_ID, 0xC0, 0x03, 0x01 },
+                    new byte[] { AsusHid.AURA_ID, 0x9E, 0x01, 0x20 },
+
+                    Encoding.ASCII.GetBytes("]ASUS Tech.Inc."),
+                    new byte[] { AsusHid.AURA_ID, 0x05, 0x20, 0x31, 0, 0x1A },
+                    new byte[] { AsusHid.AURA_ID, 0xC0, 0x00, 0x01 },
+                }, "Init");
+            }
         }
 
 
@@ -264,6 +295,9 @@ namespace GHelper.USB
                 if (isACPI) Program.acpi.TUFKeyboardBrightness(brightness);
 
                 AsusHid.Write(new byte[] { AsusHid.AURA_ID, 0xba, 0xc5, 0xc4, (byte)brightness }, log);
+
+                if (AppConfig.IsAlly()) ApplyAura();
+
                 if (AppConfig.ContainsModel("GA503"))
                     AsusHid.WriteInput(new byte[] { AsusHid.INPUT_ID, 0xba, 0xc5, 0xc4, (byte)brightness }, log);
             });
@@ -451,7 +485,7 @@ namespace GHelper.USB
             byte[] keyBuf = new byte[mapSize];
 
             buffer[0] = AsusHid.AURA_ID;
-            buffer[1] = 0xbc;
+            buffer[1] = 0xBC;
             buffer[2] = 0;
             buffer[3] = 1;
             buffer[4] = 1;
@@ -462,7 +496,7 @@ namespace GHelper.USB
             if (init)
             {
                 Init();
-                AsusHid.WriteAura(new byte[] { AsusHid.AURA_ID, 0xbc });
+                AsusHid.WriteAura(new byte[] { AsusHid.AURA_ID, 0xBC });
             }
 
             Array.Clear(keyBuf, 0, keyBuf.Length);
@@ -499,7 +533,8 @@ namespace GHelper.USB
             buffer[6] = 0x00;
             buffer[7] = 0x00;
 
-            if (isStrix4Zone) { // per zone
+            if (isStrix4Zone)
+            { // per zone
                 var leds_4_zone = packet4Zone.Count();
                 for (int ledIndex = 0; ledIndex < leds_4_zone; ledIndex++)
                 {
@@ -558,13 +593,32 @@ namespace GHelper.USB
 
         }
 
-        public static void ApplyAura()
+        public static void ApplyAura(double colorDim = 1)
         {
 
             Mode = (AuraMode)AppConfig.Get("aura_mode");
             Speed = (AuraSpeed)AppConfig.Get("aura_speed");
             SetColor(AppConfig.Get("aura_color"));
             SetColor2(AppConfig.Get("aura_color2"));
+
+            Color _Color1 = Color1;
+            Color _Color2 = Color2;
+
+            // Ally lower brightness fix
+            if (AppConfig.IsAlly())
+            {
+                switch (InputDispatcher.GetBacklight())
+                {
+                    case 1: colorDim = 0.1; break;
+                    case 2: colorDim = 0.3; break;
+                }
+
+                if (colorDim < 1)
+                {
+                    _Color1 = Color.FromArgb((int)(Color1.R * colorDim), (int)(Color1.G * colorDim), (int)(Color1.B * colorDim));
+                    _Color2 = Color.FromArgb((int)(Color2.R * colorDim), (int)(Color2.G * colorDim), (int)(Color2.B * colorDim));
+                }
+            }
 
             timer.Enabled = false;
 
@@ -594,7 +648,7 @@ namespace GHelper.USB
 
             int _speed = (Speed == AuraSpeed.Normal) ? 0xeb : (Speed == AuraSpeed.Fast) ? 0xf5 : 0xe1;
 
-            AsusHid.Write(new List<byte[]> { AuraMessage(Mode, Color1, Color2, _speed, isSingleColor), MESSAGE_APPLY, MESSAGE_SET });
+            AsusHid.Write(new List<byte[]> { AuraMessage(Mode, _Color1, _Color2, _speed, isSingleColor), MESSAGE_SET, MESSAGE_APPLY });
 
             if (isACPI)
                 Program.acpi.TUFKeyboardRGB(Mode, Color1, _speed);
@@ -624,6 +678,8 @@ namespace GHelper.USB
                         break;
                 }
 
+                if (isACPI) Program.acpi.TUFKeyboardRGB(AuraMode.AuraStatic, color, 0xeb);
+
                 AsusHid.Write(new List<byte[]> { AuraMessage(AuraMode.AuraStatic, color, color, 0xeb, isSingleColor), MESSAGE_APPLY, MESSAGE_SET });
 
             }
@@ -652,7 +708,7 @@ namespace GHelper.USB
                 bound.Y += bound.Height / 3;
                 bound.Height -= (int)Math.Round(bound.Height * (0.33f + 0.022f)); // cut 1/3 of the top screen + windows panel
 
-                Bitmap screen_low  = AmbientData.CamptureScreen(bound, 512, 288);   //quality decreases greatly if it is less 512 ;
+                Bitmap screen_low = AmbientData.CamptureScreen(bound, 512, 288);   //quality decreases greatly if it is less 512 ;
                 Bitmap screeb_pxl = AmbientData.ResizeImage(screen_low, 4, 2);     // 4x2 zone. top for keyboard and bot for lightbar;
 
                 int zones = AURA_ZONES;
