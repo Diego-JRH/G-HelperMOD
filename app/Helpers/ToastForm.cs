@@ -1,4 +1,5 @@
-﻿using System.Drawing.Drawing2D;
+﻿using System.Diagnostics;
+using System.Drawing.Drawing2D;
 
 namespace GHelper.Helpers
 {
@@ -50,7 +51,8 @@ namespace GHelper.Helpers
         MicrophoneMute,
         FnLock,
         Battery,
-        Charger
+        Charger,
+        Controller
     }
 
     public class ToastForm : OSDNativeForm
@@ -111,6 +113,9 @@ namespace GHelper.Helpers
                 case ToastIcon.Charger:
                     icon = Properties.Resources.icons8_charging_battery_96;
                     break;
+                case ToastIcon.Controller:
+                    icon = Properties.Resources.icons8_controller_96;
+                    break;
 
             }
 
@@ -129,6 +134,16 @@ namespace GHelper.Helpers
             format);
 
         }
+
+        public static void ReadText(string text)
+        {
+            ProcessStartInfo startInfo = new ProcessStartInfo();
+            startInfo.FileName = "PowerShell.exe";
+            startInfo.Arguments = $"-Command \"Add-Type -AssemblyName System.Speech; (New-Object System.Speech.Synthesis.SpeechSynthesizer).Speak('{text}')\"";
+            startInfo.CreateNoWindow = true;
+            Process.Start(startInfo);
+        }
+
 
         public void RunToast(string text, ToastIcon? icon = null)
         {
@@ -152,6 +167,14 @@ namespace GHelper.Helpers
 
                 Show();
                 timer.Start();
+
+                //if (AppConfig.Is("narrator")) ReadText(text);
+
+                Program.settingsForm.AccessibilityObject.RaiseAutomationNotification(
+                    System.Windows.Forms.Automation.AutomationNotificationKind.ActionCompleted,
+                    System.Windows.Forms.Automation.AutomationNotificationProcessing.MostRecent,
+                    text);
+
             });
 
         }

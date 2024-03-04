@@ -25,6 +25,14 @@ namespace GHelper
             InitializeComponent();
             InitTheme(true);
 
+            Text = Properties.Strings.AnimeMatrix;
+            labelZoomTitle.Text = Properties.Strings.Zoom;
+            labelScaling.Text = Properties.Strings.ScalingQuality;
+            labelRotation.Text = Properties.Strings.ImageRotation;
+            labelContrastTitle.Text = Properties.Strings.Contrast;
+            buttonPicture.Text = Properties.Strings.PictureGif;
+            buttonReset.Text = Properties.Strings.Reset;
+
             Shown += Matrix_Shown;
             FormClosing += Matrix_FormClosed;
 
@@ -54,8 +62,8 @@ namespace GHelper
             comboRotation.SelectedValueChanged += ComboRotation_SelectedValueChanged; ;
 
 
-            uiScale = panelPicture.Width / matrixControl.device.MaxColumns / 3;
-            panelPicture.Height = (int)(matrixControl.device.MaxRows * uiScale);
+            uiScale = panelPicture.Width / matrixControl.deviceMatrix.MaxColumns / 3;
+            panelPicture.Height = (int)(matrixControl.deviceMatrix.MaxRows * uiScale);
 
         }
 

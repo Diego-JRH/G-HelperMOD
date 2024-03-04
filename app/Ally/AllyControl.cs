@@ -1,4 +1,5 @@
 ﻿using GHelper.Gpu.AMD;
+using GHelper.Helpers;
 using GHelper.Input;
 using GHelper.USB;
 using HidSharp;
@@ -89,6 +90,7 @@ namespace GHelper.Ally
         public const string BindBrightnessDown = "04-04-8C-88-8A-05";
         public const string BindBrightnessUp = "04-04-8C-88-8A-06";
         public const string BindXGM = "04-04-8C-88-8A-04";
+        public const string BindToggleMode = "04-04-8C-88-8A-0C";
 
         public const string BindOverlay = "04-03-8C-88-44";
 
@@ -105,8 +107,8 @@ namespace GHelper.Ally
 
         public const string BindShowKeyboard = "05-19";
 
-        static byte[] CommandReady = new byte[] { AsusHid.INPUT_ID, 0xd1, 0x0a, 0x01 };
-        static byte[] CommandSave = new byte[] { AsusHid.INPUT_ID, 0xd1, 0x0f, 0x20 };
+        static byte[] CommandReady = new byte[] { AsusHid.INPUT_ID, 0xD1, 0x0A, 0x01 };
+        static byte[] CommandSave = new byte[] { AsusHid.INPUT_ID, 0xD1, 0x0F, 0x20 };
 
         public static Dictionary<string, string> BindCodes = new Dictionary<string, string>
         {
@@ -138,6 +140,8 @@ namespace GHelper.Ally
             { BindMB, "Menu Button" },
 
             { BindXB, "XBox/Steam" },
+
+            { BindToggleMode, "Controller Mode" },
 
             { BindVolUp, "Vol Up" },
             { BindVolDown, "Vol Down" },
@@ -309,10 +313,12 @@ namespace GHelper.Ally
             if (AppConfig.IsAlly()) settings.VisualiseAlly(true);
             else return;
 
-            SetMode((ControllerMode)AppConfig.Get("controller_mode", (int)ControllerMode.Auto));
+            SetMode((ControllerMode)AppConfig.Get("controller_mode", (int)ControllerMode.Auto), true);
 
             settings.VisualiseBacklight(InputDispatcher.GetBacklight());
-            settings.VisualiseFPSLimit(amdControl.GetFPSLimit());
+
+            fpsLimit = amdControl.GetFPSLimit();
+            settings.VisualiseFPSLimit(fpsLimit);
 
         }
 
@@ -419,7 +425,7 @@ namespace GHelper.Ally
                     KeyL1 = AppConfig.GetString("bind_ls", desktop ? BindShift : BindLS);
                     KeyR1 = AppConfig.GetString("bind_rs", desktop ? BindMouseL : BindRS);
                     KeyL2 = AppConfig.GetString("bind2_ls");
-                    KeyR2 = AppConfig.GetString("bind2_rs");
+                    KeyR2 = AppConfig.GetString("bind2_rs", BindToggleMode);
                     break;
                 case BindingZone.Bumper:
                     KeyL1 = AppConfig.GetString("bind_lb", desktop ? BindTab : BindLB);
@@ -472,10 +478,8 @@ namespace GHelper.Ally
             DecodeBinding(KeyR1).CopyTo(bindings, 27);
             DecodeBinding(KeyR2).CopyTo(bindings, 38);
 
-            AsusHid.WriteInput(CommandReady, null);
+            //AsusHid.WriteInput(CommandReady, null);
             AsusHid.WriteInput(bindings, $"B{zone}");
-
-
 
         }
 
@@ -486,8 +490,6 @@ namespace GHelper.Ally
 
         static public void SetDeadzones()
         {
-            WakeUp();
-
             AsusHid.WriteInput(new byte[] { AsusHid.INPUT_ID, 0xd1, 4, 4,
                 (byte)AppConfig.Get("ls_min", 0),
                 (byte)AppConfig.Get("ls_max", 100),
@@ -509,7 +511,12 @@ namespace GHelper.Ally
 
         }
 
-        public static void ApplyMode(ControllerMode applyMode = ControllerMode.Auto)
+        public static void ApplyXBoxStatus()
+        {
+            AsusHid.WriteInput(new byte[] { AsusHid.INPUT_ID, 0xD1, 0x0B, 0x01, AppConfig.Is("controller_disabled") ? (byte)0x02 : (byte)0x01 }, "Status");
+        }
+
+        public static void ApplyMode(ControllerMode applyMode = ControllerMode.Auto, bool init = false)
         {
             Task.Run(() =>
             {
@@ -519,10 +526,10 @@ namespace GHelper.Ally
                 HidStream? input = AsusHid.FindHidStream(AsusHid.INPUT_ID);
                 int count = 0;
 
-                while (input == null && count++ < 5)
+                while (input == null && count++ < 10)
                 {
                     input = AsusHid.FindHidStream(AsusHid.INPUT_ID);
-                    Thread.Sleep(2000);
+                    Thread.Sleep(500);
                 }
 
                 if (input == null)
@@ -533,14 +540,16 @@ namespace GHelper.Ally
 
                 if (applyMode != ControllerMode.Auto) _applyMode = applyMode;
 
-                InputDispatcher.SetBacklightAuto(true);
-                WakeUp();
+                if (init)
+                {
+                    WakeUp();
+                    InputDispatcher.SetBacklightAuto(true);
+                }
 
-                AsusHid.WriteInput(new byte[] { AsusHid.INPUT_ID, 0xd1, 0x01, 0x01, (byte)_applyMode }, "Controller");
-                AsusHid.WriteInput(CommandSave, null);
+                AsusHid.WriteInput(new byte[] { AsusHid.INPUT_ID, 0xD1, 0x01, 0x01, (byte)_applyMode }, "Controller");
+                //AsusHid.WriteInput(CommandSave, null);
 
                 BindZone(BindingZone.M1M2);
-
                 BindZone(BindingZone.DPadUpDown);
                 BindZone(BindingZone.DPadLeftRight);
                 BindZone(BindingZone.StickClick);
@@ -551,18 +560,19 @@ namespace GHelper.Ally
                 BindZone(BindingZone.Trigger);
 
                 AsusHid.WriteInput(CommandSave, null);
+
                 SetDeadzones();
 
             });
         }
 
-        private void SetMode(ControllerMode mode)
+        private void SetMode(ControllerMode mode, bool init = false)
         {
 
             _mode = mode;
             AppConfig.Set("controller_mode", (int)mode);
 
-            ApplyMode(mode);
+            ApplyMode(mode, init);
 
             if (mode == ControllerMode.Auto)
             {
@@ -578,9 +588,23 @@ namespace GHelper.Ally
             settings.VisualiseController(mode);
         }
 
+
+        public void ToggleModeHotkey()
+        {
+            if (_applyMode == ControllerMode.Gamepad)
+            {
+                SetMode(ControllerMode.Mouse);
+                Program.toast.RunToast("Mouse", ToastIcon.Controller);
+            }
+            else
+            {
+                SetMode(ControllerMode.Gamepad);
+                Program.toast.RunToast("Gamepad", ToastIcon.Controller);
+            }
+        }
+
         public void ToggleMode()
         {
-
             switch (_mode)
             {
                 case ControllerMode.Auto:
@@ -596,7 +620,6 @@ namespace GHelper.Ally
                     SetMode(ControllerMode.Auto);
                     break;
             }
-
         }
 
     }

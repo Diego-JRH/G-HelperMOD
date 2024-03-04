@@ -144,6 +144,9 @@
   <data name="AlertUltimateTitle" xml:space="preserve">
     <value>¿Reiniciar ahora?</value>
   </data>
+  <data name="AllyController" xml:space="preserve">
+    <value>Mando Ally</value>
+  </data>
   <data name="AnimationSpeed" xml:space="preserve">
     <value>Velocidad</value>
   </data>
@@ -270,6 +273,15 @@
   <data name="BatteryLimitFull" xml:space="preserve">
     <value>Cargar una vez al 100%</value>
   </data>
+  <data name="Binding" xml:space="preserve">
+    <value>Emparejado</value>
+  </data>
+  <data name="BindingPrimary" xml:space="preserve">
+    <value>Primario</value>
+  </data>
+  <data name="BindingSecondary" xml:space="preserve">
+    <value>Secundario</value>
+  </data>
   <data name="BiosAndDriverUpdates" xml:space="preserve">
     <value>Actualizaciones de BIOS y Drivers</value>
   </data>
@@ -297,6 +309,12 @@
   <data name="Color" xml:space="preserve">
     <value>Color</value>
   </data>
+  <data name="Contrast" xml:space="preserve">
+    <value>Contraste</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>Mando</value>
+  </data>
   <data name="CPUBoost" xml:space="preserve">
     <value>CPU Boost</value>
   </data>
@@ -308,6 +326,12 @@
   </data>
   <data name="Default" xml:space="preserve">
     <value>Por defecto</value>
+  </data>
+  <data name="DisableController" xml:space="preserve">
+    <value>Deshabilitar mando</value>
+  </data>
+  <data name="DisableOnLidClose" xml:space="preserve">
+    <value>Desactivar al cerrar la tapa</value>
   </data>
   <data name="DisableOverdrive" xml:space="preserve">
     <value>Desactivar Overdrive</value>
@@ -327,6 +351,9 @@
   <data name="EcoMode" xml:space="preserve">
     <value>Eco</value>
   </data>
+  <data name="EnableGPUOnShutdown" xml:space="preserve">
+    <value>Habilitar GPU al apagar (evita problemas con el modo Eco)</value>
+  </data>
   <data name="EnableOptimusText" xml:space="preserve">
     <value>Deshabilitar la dGPU cambiando a modo Eco mientras el Modo de Pantalla en el Panel de Control de NVIDIA no está configurado en Optimus puede causar problemas con el control del brillo hasta después del próximo reinicio.
 
@@ -337,6 +364,9 @@
   </data>
   <data name="EnergySettings" xml:space="preserve">
     <value>Ajustes de energía</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>Exportar perfil</value>
   </data>
   <data name="Extra" xml:space="preserve">
     <value>Adicional</value>
@@ -410,6 +440,12 @@
   <data name="High" xml:space="preserve">
     <value>Alto</value>
   </data>
+  <data name="ImageRotation" xml:space="preserve">
+    <value>Rotación de imagen</value>
+  </data>
+  <data name="Import" xml:space="preserve">
+    <value>Importar perfil</value>
+  </data>
   <data name="KeyBindings" xml:space="preserve">
     <value>Atajos de teclado</value>
   </data>
@@ -442,6 +478,12 @@
   </data>
   <data name="Low" xml:space="preserve">
     <value>Bajo</value>
+  </data>
+  <data name="LSDeadzones" xml:space="preserve">
+    <value>Punto muerto stick izquierdo</value>
+  </data>
+  <data name="LTDeadzones" xml:space="preserve">
+    <value>Punto muerto gatillo izquierdo</value>
   </data>
   <data name="MatrixAudio" xml:space="preserve">
     <value>Visualizador de audio</value>
@@ -490,6 +532,9 @@
   </data>
   <data name="MouseButtonResponse" xml:space="preserve">
     <value>Respuesta del botón</value>
+  </data>
+  <data name="MouseImportFailed" xml:space="preserve">
+    <value>Importación fallida. El archivo seleccionado no es un perfil válido o está corrupto.</value>
   </data>
   <data name="MouseLiftOffDistance" xml:space="preserve">
     <value>Distancia de despegue (LOD)</value>
@@ -575,14 +620,26 @@
   <data name="Quit" xml:space="preserve">
     <value>Quitar</value>
   </data>
+  <data name="Reset" xml:space="preserve">
+    <value>Reiniciar</value>
+  </data>
   <data name="RestartGPU" xml:space="preserve">
     <value>Algo está usando la dGPU e impide el modo Eco. ¿Reiniciar dGPU en el administrador de dispositivos? (Proceda bajo su propio riesgo)</value>
   </data>
   <data name="RPM" xml:space="preserve">
     <value>RPM</value>
   </data>
+  <data name="RSDeadzones" xml:space="preserve">
+    <value>Punto muerto stick derecho</value>
+  </data>
+  <data name="RTDeadzones" xml:space="preserve">
+    <value>Punto muerto gatillo derecho</value>
+  </data>
   <data name="RunOnStartup" xml:space="preserve">
     <value>Ejecutar al inicio</value>
+  </data>
+  <data name="ScalingQuality" xml:space="preserve">
+    <value>Calidad del escalado</value>
   </data>
   <data name="ScreenPadDown" xml:space="preserve">
     <value>Bajar brillo ScreenPad</value>
@@ -662,6 +719,9 @@
   <data name="VersionLabel" xml:space="preserve">
     <value>Versión</value>
   </data>
+  <data name="VibrationStrength" xml:space="preserve">
+    <value>Intensidad de vibración</value>
+  </data>
   <data name="VolumeDown" xml:space="preserve">
     <value>Bajar volumen</value>
   </data>
@@ -673,5 +733,8 @@
   </data>
   <data name="WindowTop" xml:space="preserve">
     <value>Mantener aplicación siempre visible</value>
+  </data>
+  <data name="Zoom" xml:space="preserve">
+    <value>Zoom</value>
   </data>
 </root>

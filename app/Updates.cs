@@ -35,10 +35,15 @@ namespace GHelper
 
             (bios, model) = AppConfig.GetBiosAndModel();
 
+            buttonRefresh.TabStop = false;
+
             updatesCount = 0;
             labelUpdates.ForeColor = colorEco;
             labelUpdates.Text = Properties.Strings.NoNewUpdates;
 
+            panelBios.AccessibleRole = AccessibleRole.Grouping;
+            panelBios.AccessibleName = Properties.Strings.NoNewUpdates;
+            panelBios.TabStop = true;
 
             Text = Properties.Strings.BiosAndDriverUpdates + ": " + model + " " + bios;
             labelBIOS.Text = "BIOS";
@@ -78,12 +83,11 @@ namespace GHelper
             InitializeComponent();
             InitTheme(true);
 
-            LoadUpdates(true);
-
             //buttonRefresh.Visible = false;
             buttonRefresh.Click += ButtonRefresh_Click;
             Shown += Updates_Shown;
         }
+
 
         private void ButtonRefresh_Click(object? sender, EventArgs e)
         {
@@ -95,7 +99,9 @@ namespace GHelper
             Height = Program.settingsForm.Height;
             Top = Program.settingsForm.Top;
             Left = Program.settingsForm.Left - Width - 5;
+            LoadUpdates(true);
         }
+
         private Dictionary<string, string> GetDeviceVersions()
         {
             using (ManagementObjectSearcher objSearcher = new ManagementObjectSearcher("Select * from Win32_PnPSignedDriver"))
@@ -121,12 +127,17 @@ namespace GHelper
             Invoke(delegate
             {
                 string versionText = driver.version.Replace("latest version at the ", "");
-                Label versionLabel = new Label { Text = versionText, Anchor = AnchorStyles.Left, AutoSize = true };
+                LinkLabel versionLabel = new LinkLabel { Text = versionText, Anchor = AnchorStyles.Left, AutoSize = true };
+
+                versionLabel.AccessibleName = driver.title;
+                versionLabel.TabStop = true;
+                versionLabel.TabIndex = table.RowCount + 1;
+
                 versionLabel.Cursor = Cursors.Hand;
                 versionLabel.Font = new Font(versionLabel.Font, FontStyle.Underline);
-                versionLabel.ForeColor = colorEco;
+                versionLabel.LinkColor = colorEco;
                 versionLabel.Padding = new Padding(5, 5, 5, 5);
-                versionLabel.Click += delegate
+                versionLabel.LinkClicked += delegate
                 {
                     Process.Start(new ProcessStartInfo(driver.downloadUrl) { UseShellExecute = true });
                 };
@@ -150,23 +161,36 @@ namespace GHelper
             });
         }
 
+        private void _VisualiseNewDriver(int position, int newer, TableLayoutPanel table)
+        {
+            var label = table.GetControlFromPosition(3, position) as LinkLabel;
+            if (label != null)
+            {
+                if (newer == DRIVER_NEWER)
+                {
+                    label.AccessibleName = label.AccessibleName + Properties.Strings.NewUpdates;
+                    label.Font = new Font(label.Font, FontStyle.Underline | FontStyle.Bold);
+                    label.LinkColor = colorTurbo;
+                }
+
+                if (newer == DRIVER_NOT_FOUND) label.LinkColor = Color.Gray;
+
+            }
+        }
+
         public void VisualiseNewDriver(int position, int newer, TableLayoutPanel table)
         {
-            var label = table.GetControlFromPosition(3, position) as Label;
-            if (label != null)
+            if (InvokeRequired)
             {
                 Invoke(delegate
                 {
-                    if (newer == DRIVER_NEWER)
-                    {
-                        label.Font = new Font(label.Font, FontStyle.Underline | FontStyle.Bold);
-                        label.ForeColor = colorTurbo;
-                    }
-
-                    if (newer == DRIVER_NOT_FOUND) label.ForeColor = Color.Gray;
-
+                    _VisualiseNewDriver(position, newer, table);
                 });
+            } else
+            {
+                _VisualiseNewDriver(position, newer, table);
             }
+
         }
 
         public void VisualiseNewCount(int updatesCount, TableLayoutPanel table)
@@ -176,10 +200,13 @@ namespace GHelper
                 labelUpdates.Text = $"{Properties.Strings.NewUpdates}: {updatesCount}";
                 labelUpdates.ForeColor = colorTurbo;
                 labelUpdates.Font = new Font(labelUpdates.Font, FontStyle.Bold);
+
+                panelBios.AccessibleName = labelUpdates.Text;
+
             });
         }
 
-    public async void DriversAsync(string url, int type, TableLayoutPanel table)
+        public async void DriversAsync(string url, int type, TableLayoutPanel table)
         {
 
             try
@@ -252,7 +279,7 @@ namespace GHelper
                                 foreach (var localVersion in localVersions)
                                 {
                                     newer = Math.Min(newer, new Version(driver.version).CompareTo(new Version(localVersion)));
-                                    Logger.WriteLine(driver.title + " " + deviceID  + " "+ driver.version + " vs " + localVersion + " = " + newer);
+                                    Logger.WriteLine(driver.title + " " + deviceID + " " + driver.version + " vs " + localVersion + " = " + newer);
                                 }
 
                             }

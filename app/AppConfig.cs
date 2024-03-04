@@ -67,9 +67,17 @@ public static class AppConfig
         {
             File.WriteAllText(backup, jsonString);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Logger.WriteLine(ex.ToString());
+            Thread.Sleep(100);
+            try
+            {
+                File.WriteAllText(backup, jsonString);
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine(ex.Message);
+            }
             return;
         }
 
@@ -91,15 +99,23 @@ public static class AppConfig
         if (_model is null)
         {
             _model = "";
-            using (var searcher = new ManagementObjectSearcher(@"Select * from Win32_ComputerSystem"))
+            try
             {
-                foreach (var process in searcher.Get())
+                using (var searcher = new ManagementObjectSearcher(@"Select * from Win32_ComputerSystem"))
                 {
-                    _model = process["Model"].ToString();
-                    break;
+                    foreach (var process in searcher.Get())
+                    {
+                        _model = process["Model"].ToString();
+                        break;
+                    }
                 }
+            } catch (Exception ex)
+            {
+                Logger.WriteLine(ex.Message);
             }
         }
+
+        //if (_model.Contains("GA402RK")) _model = "ROG Zephyrus G14 GA403UI"; // Debug Purposes
 
         return _model;
     }
@@ -349,9 +365,9 @@ public static class AppConfig
         return ContainsModel("ProArt");
     }
 
-    public static bool IsVivobook()
+    public static bool IsVivoZenbook()
     {
-        return ContainsModel("Vivobook");
+        return ContainsModel("Vivobook") || ContainsModel("Zenbook");
     }
 
     // Devices with bugged bios command to change brightness
@@ -377,14 +393,40 @@ public static class AppConfig
         return ContainsModel("GA401") || ContainsModel("FX517Z") || ContainsModel("FX516P") || ContainsModel("X13") || IsARCNM() || ContainsModel("GA502IU");
     }
 
+    public static bool IsSlash()
+    {
+        return ContainsModel("GA403") || ContainsModel("GU605");
+    }
+
+    public static bool IsInputBacklight()
+    {
+        return ContainsModel("GA503") || IsSlash();
+    }
+
+    public static bool IsOLED()
+    {
+        return ContainsModel("OLED") || IsSlash() || ContainsModel("UX64") || ContainsModel("UX34") || ContainsModel("UX53") || ContainsModel("K360") || ContainsModel("X150"); 
+    }
+
     public static bool IsStrix()
     {
-        return ContainsModel("Strix") || ContainsModel("Scar");
+        return ContainsModel("Strix") || ContainsModel("Scar") || ContainsModel("G703G");
     }
 
     public static bool IsStrixLimitedRGB()
     {
         return (ContainsModel("G614JV") || ContainsModel("G614JZ") || ContainsModel("G512LI") || ContainsModel("G513R") || ContainsModel("G713PV") || ContainsModel("G513IE") || ContainsModel("G713RC") || ContainsModel("G513QM") || ContainsModel("G531G")) && !Is("per_key_rgb");
+    }
+
+
+    public static bool IsNoAirplaneMode()
+    {
+        return ContainsModel("FX506");
+    }
+
+    public static bool NoWMI()
+    {
+        return ContainsModel("GL704G");
     }
 
     public static bool IsNoDirectRGB()
@@ -412,6 +454,11 @@ public static class AppConfig
         return ContainsModel("X13");
     }
 
+    public static bool IsG14AMD()
+    {
+        return ContainsModel("GA402R");
+    }
+
     public static bool DynamicBoost5()
     {
         return ContainsModel("GZ301ZE");
@@ -429,7 +476,7 @@ public static class AppConfig
 
     public static bool NoAutoUltimate()
     {
-        return ContainsModel("G614") || ContainsModel("GU604") || ContainsModel("FX507") || ContainsModel("G513") || ContainsModel("FA617") || ContainsModel("G834");
+        return ContainsModel("G614") || ContainsModel("GU604") || ContainsModel("FX507") || ContainsModel("G513") || ContainsModel("FA617") || ContainsModel("G834") || ContainsModel("GA403") || ContainsModel("GU605");
     }
 
 
@@ -453,6 +500,21 @@ public static class AppConfig
         {
             var (bios, model) = GetBiosAndModel();
             return (Int32.Parse(bios) < 312);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public static bool IsSwappedFans()
+    {
+        if (!ContainsModel("GA503R")) return false;
+
+        try
+        {
+            var (bios, model) = GetBiosAndModel();
+            return (Int32.Parse(bios) == 317 || Int32.Parse(bios) == 316);
         }
         catch
         {

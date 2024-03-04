@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+﻿using System.Runtime.InteropServices;
 
 namespace GHelper.Display
 {
@@ -6,6 +6,8 @@ namespace GHelper.Display
     {
 
         public const int MAX_REFRESH = 1000;
+
+        public static DisplayGammaRamp? gammaRamp;
 
         public void AutoScreen(bool force = false)
         {
@@ -20,6 +22,58 @@ namespace GHelper.Display
             {
                 SetScreen(overdrive: AppConfig.Get("overdrive"));
             }
+        }
+
+        public void SetBrightness(int brightness = -1)
+        {
+            if (!AppConfig.IsOLED()) return;
+
+            if (brightness >= 0) AppConfig.Set("brightness", brightness);
+            else brightness = AppConfig.Get("brightness");
+
+            if (brightness >= 0) SetGamma(brightness);
+        }
+
+
+        public void SetGamma(int brightness = 100)
+        {
+            var bright = Math.Round((float)brightness / 200 + 0.5, 2);
+
+            var screenName = ScreenNative.FindLaptopScreen();
+            if (screenName is null) return;
+
+            try
+            {
+                var handle = ScreenNative.CreateDC(screenName, screenName, null, IntPtr.Zero);
+                if (gammaRamp is null)
+                {
+                    var gammaDump = new GammaRamp();
+                    if (ScreenNative.GetDeviceGammaRamp(handle, ref gammaDump))
+                    {
+                        gammaRamp = new DisplayGammaRamp(gammaDump);
+                        //Logger.WriteLine("Gamma R: " + string.Join("-", gammaRamp.Red));
+                        //Logger.WriteLine("Gamma G: " + string.Join("-", gammaRamp.Green));
+                        //Logger.WriteLine("Gamma B: " + string.Join("-", gammaRamp.Blue));
+                    }
+                }
+
+                if (gammaRamp is null || !gammaRamp.IsOriginal())
+                {
+                    Logger.WriteLine("Not default Gamma");
+                    gammaRamp = new DisplayGammaRamp();
+                }
+
+                var ramp = gammaRamp.AsBrightnessRamp(bright);
+                bool result = ScreenNative.SetDeviceGammaRamp(handle, ref ramp);
+
+                Logger.WriteLine("Brightness " + bright.ToString() + ": " + result);
+
+            } catch (Exception ex)
+            {
+                Logger.WriteLine(ex.ToString());
+            }
+
+            //ScreenBrightness.Set(60 + (int)(40 * bright));
         }
 
         public void SetScreen(int frequency = -1, int overdrive = -1, int miniled = -1)
@@ -71,7 +125,8 @@ namespace GHelper.Display
             if (miniled1 >= 0)
             {
                 miniled = (miniled1 == 1) ? 0 : 1;
-            } else
+            }
+            else
             {
                 switch (miniled2)
                 {
@@ -101,13 +156,12 @@ namespace GHelper.Display
             int miniled1 = Program.acpi.DeviceGet(AsusACPI.ScreenMiniled1);
             int miniled2 = Program.acpi.DeviceGet(AsusACPI.ScreenMiniled2);
 
-            Logger.WriteLine($"Miniled: {miniled1} {miniled2}");
-
             int miniled = (miniled1 >= 0) ? miniled1 : miniled2;
             bool hdr = false;
 
             if (miniled >= 0)
             {
+                Logger.WriteLine($"Miniled: {miniled1} {miniled2}");
                 AppConfig.Set("miniled", miniled);
                 hdr = ScreenCCD.GetHDRStatus();
             }

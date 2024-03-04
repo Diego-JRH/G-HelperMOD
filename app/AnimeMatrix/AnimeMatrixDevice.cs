@@ -3,10 +3,9 @@
 using GHelper.AnimeMatrix.Communication;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
-using System.Management;
 using System.Text;
 
-namespace Starlight.AnimeMatrix
+namespace GHelper.AnimeMatrix
 {
     public class BuiltInAnimation
     {
@@ -72,7 +71,6 @@ namespace Starlight.AnimeMatrix
     }
 
 
-
     public enum BrightnessMode : byte
     {
         Off = 0,
@@ -80,7 +78,6 @@ namespace Starlight.AnimeMatrix
         Medium = 2,
         Full = 3
     }
-
 
 
     public class AnimeMatrixDevice : Device
@@ -94,7 +91,6 @@ namespace Starlight.AnimeMatrix
         public int MaxRows = 61;
         public int MaxColumns = 34;
         public int LedStart = 0;
-
         public int FullRows = 11;
 
         private int frameIndex = 0;
@@ -107,9 +103,7 @@ namespace Starlight.AnimeMatrix
 
         public AnimeMatrixDevice() : base(0x0B05, 0x193B, 640)
         {
-            string model = GetModel();
-
-            if (model.Contains("401"))
+            if (AppConfig.ContainsModel("401"))
             {
                 _model = AnimeType.GA401;
 
@@ -124,7 +118,7 @@ namespace Starlight.AnimeMatrix
                 LedStart = 1;
             }
 
-            if (model.Contains("GU604"))
+            if (AppConfig.ContainsModel("GU604"))
             {
                 _model = AnimeType.GU604;
 
@@ -142,6 +136,56 @@ namespace Starlight.AnimeMatrix
 
         }
 
+        public void WakeUp()
+        {
+            Set(Packet<AnimeMatrixPacket>(Encoding.ASCII.GetBytes("ASUS Tech.Inc.")));
+        }
+
+        public void SetBrightness(BrightnessMode mode)
+        {
+            Set(Packet<AnimeMatrixPacket>(0xC0, 0x04, (byte)mode));
+        }
+
+        public void SetDisplayState(bool enable)
+        {
+            Set(Packet<AnimeMatrixPacket>(0xC3, 0x01, enable ? (byte)0x00 : (byte)0x80));
+        }
+
+        public void SetBuiltInAnimation(bool enable)
+        {
+            Set(Packet<AnimeMatrixPacket>(0xC4, 0x01, enable ? (byte)0x00 : (byte)0x80));
+        }
+
+        public void SetBuiltInAnimation(bool enable, BuiltInAnimation animation)
+        {
+            SetBuiltInAnimation(enable);
+            Set(Packet<AnimeMatrixPacket>(0xC5, animation.AsByte));
+        }
+
+        public void Present()
+        {
+
+            int page = 0;
+            int start, end;
+
+            while (page * UpdatePageLength < LedCount)
+            {
+                start = page * UpdatePageLength;
+                end = Math.Min(LedCount, (page + 1) * UpdatePageLength);
+
+                Set(Packet<AnimeMatrixPacket>(0xC0, 0x02)
+                    .AppendData(BitConverter.GetBytes((ushort)(start + 1)))
+                    .AppendData(BitConverter.GetBytes((ushort)(end - start)))
+                    .AppendData(_displayBuffer[start..end])
+                );
+
+                page++;
+            }
+
+            Set(Packet<AnimeMatrixPacket>(0xC0, 0x03));
+        }
+
+
         private void LoadMFont()
         {
             byte[] fontData = GHelper.Properties.Resources.MFont;
@@ -154,22 +198,6 @@ namespace Starlight.AnimeMatrix
             System.Runtime.InteropServices.Marshal.FreeCoTaskMem(fontPtr);
         }
 
-        public string GetModel()
-        {
-            using (var searcher = new ManagementObjectSearcher(@"Select * from Win32_ComputerSystem"))
-            {
-                foreach (var process in searcher.Get())
-                    return process["Model"].ToString();
-            }
-
-            return null;
-
-        }
-
-        public byte[] GetBuffer()
-        {
-            return _displayBuffer;
-        }
 
         public void PresentNextFrame()
         {
@@ -189,12 +217,6 @@ namespace Starlight.AnimeMatrix
         {
             frames.Add(_displayBuffer.ToArray());
         }
-
-        public void SendRaw(params byte[] data)
-        {
-            Set(Packet<AnimeMatrixPacket>(data));
-        }
-
 
         public int Width()
         {
@@ -293,7 +315,7 @@ namespace Starlight.AnimeMatrix
 
             if (x >= FirstX(y) && x < Width())
                 SetLedLinear(RowToLinearAddress(y) - FirstX(y) + x, value);
-        }
+            }
 
         public void SetLedDiagonal(int x, int y, byte color, int deltaX = 0, int deltaY = 0)
         {
@@ -302,14 +324,12 @@ namespace Starlight.AnimeMatrix
 
             int plX = (x - y) / 2;
             int plY = x + y;
+
+            if (x - y == -1) plX = -1;
+
             SetLedPlanar(plX, plY, color);
         }
 
-
-        public void WakeUp()
-        {
-            Set(Packet<AnimeMatrixPacket>(Encoding.ASCII.GetBytes("ASUS Tech.Inc.")));
-        }
 
         public void SetLedLinear(int address, byte value)
         {
@@ -317,87 +337,12 @@ namespace Starlight.AnimeMatrix
             _displayBuffer[address] = value;
         }
 
-        public void SetLedLinearImmediate(int address, byte value)
-        {
-            if (!IsAddressableLed(address)) return;
-            _displayBuffer[address] = value;
-
-            Set(Packet<AnimeMatrixPacket>(0xC0, 0x02)
-                .AppendData(BitConverter.GetBytes((ushort)(address + 1)))
-                .AppendData(BitConverter.GetBytes((ushort)0x0001))
-                .AppendData(value)
-            );
-
-            Set(Packet<AnimeMatrixPacket>(0xC0, 0x03));
-        }
-
-
 
         public void Clear(bool present = false)
         {
-            for (var i = 0; i < _displayBuffer.Length; i++)
-                _displayBuffer[i] = 0;
-
-            if (present)
-                Present();
+            for (var i = 0; i < _displayBuffer.Length; i++) _displayBuffer[i] = 0;
+            if (present) Present();
         }
-
-        public void Present()
-        {
-
-            int page = 0;
-            int start, end;
-
-            while (page * UpdatePageLength < LedCount)
-            {
-                start = page * UpdatePageLength;
-                end = Math.Min(LedCount, (page + 1) * UpdatePageLength);
-
-                Set(Packet<AnimeMatrixPacket>(0xC0, 0x02)
-                    .AppendData(BitConverter.GetBytes((ushort)(start + 1)))
-                    .AppendData(BitConverter.GetBytes((ushort)(end - start)))
-                    .AppendData(_displayBuffer[start..end])
-                );
-
-                page++;
-            }
-
-            Set(Packet<AnimeMatrixPacket>(0xC0, 0x03));
-        }
-
-        public void SetDisplayState(bool enable)
-        {
-            if (enable)
-            {
-                Set(Packet<AnimeMatrixPacket>(0xC3, 0x01)
-                    .AppendData(0x00));
-            }
-            else
-            {
-                Set(Packet<AnimeMatrixPacket>(0xC3, 0x01)
-                    .AppendData(0x80));
-            }
-        }
-
-        public void SetBrightness(BrightnessMode mode)
-        {
-            Set(Packet<AnimeMatrixPacket>(0xC0, 0x04)
-                .AppendData((byte)mode)
-            );
-        }
-
-        public void SetBuiltInAnimation(bool enable)
-        {
-            var enabled = enable ? (byte)0x00 : (byte)0x80;
-            Set(Packet<AnimeMatrixPacket>(0xC4, 0x01, enabled));
-        }
-
-        public void SetBuiltInAnimation(bool enable, BuiltInAnimation animation)
-        {
-            SetBuiltInAnimation(enable);
-            Set(Packet<AnimeMatrixPacket>(0xC5, animation.AsByte));
-        }
-
 
         private void SetBitmapDiagonal(Bitmap bmp, int deltaX = 0, int deltaY = 0, int contrast = 100)
         {
@@ -408,7 +353,7 @@ namespace Starlight.AnimeMatrix
                     var pixel = bmp.GetPixel(x, y);
                     var color = Math.Min((pixel.R + pixel.G + pixel.B) * contrast / 300, 255);
                     if (color > 20)
-                        SetLedDiagonal(x, y, (byte)color, deltaX + (FullRows / 2) + 1, deltaY - (FullRows / 2) - 1);
+                        SetLedDiagonal(x, y, (byte)color, deltaX, deltaY - (FullRows / 2) - 1);
                 }
             }
         }
@@ -431,7 +376,7 @@ namespace Starlight.AnimeMatrix
         public void Text(string text, float fontSize = 10, int x = 0, int y = 0)
         {
 
-            int width = MaxRows - FullRows;
+            int width = MaxRows;
             int height = MaxRows - FullRows;
             int textHeight, textWidth;
 
@@ -452,7 +397,7 @@ namespace Starlight.AnimeMatrix
                     }
                 }
 
-                SetBitmapDiagonal(bmp, 5 , height);
+                SetBitmapDiagonal(bmp, 5, height);
 
             }
         }
@@ -501,8 +446,11 @@ namespace Starlight.AnimeMatrix
 
         public void GenerateFrameDiagonal(Image image, float zoom = 100, int panX = 0, int panY = 0, InterpolationMode quality = InterpolationMode.Default, int contrast = 100)
         {
-            int width = MaxRows - FullRows;
-            int height = MaxRows - FullRows*2;
+            int width = MaxRows + FullRows;
+            int height = MaxColumns + FullRows;
+
+            if ((image.Height / image.Width) > (height / width)) height = MaxColumns;
+
             float scale;
 
             using (Bitmap bmp = new Bitmap(width, height))
@@ -518,7 +466,7 @@ namespace Starlight.AnimeMatrix
                     graph.CompositingQuality = CompositingQuality.HighQuality;
                     graph.SmoothingMode = SmoothingMode.AntiAlias;
 
-                    graph.DrawImage(image, width - scaleWidth, height - scaleHeight, scaleWidth, scaleHeight);
+                    graph.DrawImage(image, (width - scaleWidth) / 2, height - scaleHeight, scaleWidth, scaleHeight);
 
                 }
 

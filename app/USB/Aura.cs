@@ -73,10 +73,13 @@ namespace GHelper.USB
         private static AuraMode mode = AuraMode.AuraStatic;
         private static AuraSpeed speed = AuraSpeed.Normal;
 
+        private static bool backlight = false;
+        private static bool initDirect = false;
+
         public static Color Color1 = Color.White;
         public static Color Color2 = Color.Black;
 
-        static bool isACPI = AppConfig.IsTUF() || AppConfig.IsVivobook() || AppConfig.IsProArt();
+        static bool isACPI = AppConfig.IsTUF() || AppConfig.IsVivoZenbook() || AppConfig.IsProArt();
         static bool isStrix = AppConfig.IsStrix() && !AppConfig.IsNoDirectRGB();
 
         static bool isStrix4Zone = AppConfig.IsStrixLimitedRGB();
@@ -238,19 +241,19 @@ namespace GHelper.USB
         }
 
 
-        public static byte[] AuraMessage(AuraMode mode, Color color, Color color2, int speed, bool mono = false)
+        public static byte[] AuraMessage(AuraMode mode, Color color, Color color2, int speed, bool mono = false, byte zoneByte = 0x00)
         {
 
             byte[] msg = new byte[17];
             msg[0] = AsusHid.AURA_ID;
-            msg[1] = 0xb3;
-            msg[2] = 0x00; // Zone 
+            msg[1] = 0xB3;
+            msg[2] = zoneByte; // Zone 
             msg[3] = (byte)mode; // Aura Mode
             msg[4] = color.R; // R
             msg[5] = mono ? (byte)0 : color.G; // G
             msg[6] = mono ? (byte)0 : color.B; // B
             msg[7] = (byte)speed; // aura.speed as u8;
-            msg[8] = 0; // aura.direction as u8;
+            msg[8] = 0x00; // aura.direction as u8;
             msg[9] = mode == AuraMode.AuraBreathe ? (byte)1 : (byte)0;
             msg[10] = color2.R; // R
             msg[11] = mono ? (byte)0 : color2.G; // G
@@ -289,17 +292,27 @@ namespace GHelper.USB
 
         public static void ApplyBrightness(int brightness, string log = "Backlight", bool delay = false)
         {
+            if (brightness == 0) backlight = false;
+
             Task.Run(async () =>
             {
                 if (delay) await Task.Delay(TimeSpan.FromSeconds(1));
                 if (isACPI) Program.acpi.TUFKeyboardBrightness(brightness);
 
-                AsusHid.Write(new byte[] { AsusHid.AURA_ID, 0xba, 0xc5, 0xc4, (byte)brightness }, log);
+                if (AppConfig.IsInputBacklight()) 
+                    AsusHid.WriteInput(new byte[] { AsusHid.INPUT_ID, 0xBA, 0xC5, 0xC4, (byte)brightness }, log);
+                else 
+                    AsusHid.Write(new byte[] { AsusHid.AURA_ID, 0xBA, 0xC5, 0xC4, (byte)brightness }, log);
 
                 if (AppConfig.IsAlly()) ApplyAura();
 
-                if (AppConfig.ContainsModel("GA503"))
-                    AsusHid.WriteInput(new byte[] { AsusHid.INPUT_ID, 0xba, 0xc5, 0xc4, (byte)brightness }, log);
+                if (brightness > 0)
+                {
+                    if (!backlight) initDirect = true;
+                    backlight = true;
+
+                }
+
             });
 
 
@@ -318,6 +331,7 @@ namespace GHelper.USB
             if (flags.ShutdownLogo) keyb |= 1 << 6;
             if (flags.ShutdownKeyb) keyb |= 1 << 7;
 
+            if (flags.AwakeBar) bar |= 1 << 0;
             if (flags.BootBar) bar |= 1 << 1;
             if (flags.AwakeBar) bar |= 1 << 2;
             if (flags.SleepBar) bar |= 1 << 3;
@@ -343,7 +357,17 @@ namespace GHelper.USB
             if (flags.SleepRear) rear |= 1 << 6;
             if (flags.ShutdownRear) rear |= 1 << 7;
 
-            return new byte[] { 0x5d, 0xbd, 0x01, keyb, bar, lid, rear, 0xFF };
+            return new byte[] { AsusHid.AURA_ID, 0xBD, 0x01, keyb, bar, lid, rear, 0xFF };
+        }
+
+        private static void ApplyAllyPower(AuraPower flags)
+        {
+            byte power = 0x00;
+            if (flags.BootKeyb) power |= 0x01;
+            if (flags.AwakeKeyb) power |= 0x02;
+            if (flags.SleepKeyb) power |= 0x04;
+            if (flags.ShutdownKeyb) power |= 0x08;
+            AsusHid.WriteInput(new byte[] { AsusHid.INPUT_ID, 0xD1, 0x09, 0x01, power }, "Aura");
         }
 
         public static void ApplyPower()
@@ -380,6 +404,12 @@ namespace GHelper.USB
             flags.BootRear = AppConfig.IsNotFalse("keyboard_boot_lid");
             flags.SleepRear = AppConfig.IsNotFalse("keyboard_sleep_lid");
             flags.ShutdownRear = AppConfig.IsNotFalse("keyboard_shutdown_lid");
+
+            if (AppConfig.IsAlly())
+            {
+                ApplyAllyPower(flags);
+                return;
+            }
 
             AsusHid.Write(AuraPowerMessage(flags));
 
@@ -476,6 +506,8 @@ namespace GHelper.USB
 
         public static void ApplyDirect(Color[] color, bool init = false)
         {
+            if (!backlight) return;
+
             const byte keySet = 167;
             const byte ledCount = 178;
             const ushort mapSize = 3 * ledCount;
@@ -493,9 +525,9 @@ namespace GHelper.USB
             buffer[6] = 0;
             buffer[7] = 0x10;
 
-            if (init)
+            if (init || initDirect)
             {
-                Init();
+                initDirect = false;
                 AsusHid.WriteAura(new byte[] { AsusHid.AURA_ID, 0xBC });
             }
 
@@ -556,6 +588,8 @@ namespace GHelper.USB
         public static void ApplyDirect(Color color, bool init = false)
         {
 
+            if (!backlight) return;
+
             if (isACPI)
             {
                 Program.acpi.TUFKeyboardRGB(0, color, 0, null);
@@ -574,9 +608,9 @@ namespace GHelper.USB
                 return;
             }
 
-            if (init)
+            if (init || initDirect)
             {
-                //Init();
+                initDirect = false;
                 AsusHid.WriteAura(new byte[] { AsusHid.AURA_ID, 0xbc, 1 });
             }
 
@@ -647,7 +681,6 @@ namespace GHelper.USB
             }
 
             int _speed = (Speed == AuraSpeed.Normal) ? 0xeb : (Speed == AuraSpeed.Fast) ? 0xf5 : 0xe1;
-
             AsusHid.Write(new List<byte[]> { AuraMessage(Mode, _Color1, _Color2, _speed, isSingleColor), MESSAGE_SET, MESSAGE_APPLY });
 
             if (isACPI)
@@ -704,6 +737,8 @@ namespace GHelper.USB
 
             public static void ApplyAmbient(bool init = false)
             {
+                if (!backlight) return;
+
                 var bound = Screen.GetBounds(Point.Empty);
                 bound.Y += bound.Height / 3;
                 bound.Height -= (int)Math.Round(bound.Height * (0.33f + 0.022f)); // cut 1/3 of the top screen + windows panel

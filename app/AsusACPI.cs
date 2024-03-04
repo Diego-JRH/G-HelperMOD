@@ -43,9 +43,12 @@ public class AsusACPI
     public const int Brightness_Down = 0x10;
     public const int Brightness_Up = 0x20;
     public const int KB_Sleep = 0x6c;
+
+    public const int KB_TouchpadToggle = 0x6b;
+    public const int KB_MuteToggle = 0x7c;
+
     public const int KB_DUO_PgUpDn = 0x4B;
     public const int KB_DUO_SecondDisplay = 0x6A;
-
 
     public const int Touchpad_Toggle = 0x6B;
 
@@ -99,6 +102,12 @@ public class AsusACPI
     public const int PPT_APUC1 = 0x001200C1;  // fPPT (fast boost limit)
     public const int PPT_GPUC2 = 0x001200C2;  // NVIDIA GPU Temp Target (75.. 87 C) 
 
+    public const uint CORES_CPU = 0x001200D2; // Intel E-core and P-core configuration in a format 0x0[E]0[P]
+    public const uint CORES_MAX = 0x001200D3; // Maximum Intel E-core and P-core availability
+
+    public const uint GPU_BASE  = 0x00120099;  // Base part GPU TGP
+    public const uint GPU_POWER = 0x00120098;  // Additonal part of GPU TGP
+
     public const int APU_MEM = 0x000600C1;
 
     public const int TUF_KB_BRIGHTNESS = 0x00050021;
@@ -106,13 +115,15 @@ public class AsusACPI
     public const int TUF_KB2 = 0x0010005a;
     public const int TUF_KB_STATE = 0x00100057;
 
-    public const int MICMUTE_LED = 0x00040017;
+    public const int MicMuteLed = 0x00040017;
 
     public const int TabletState = 0x00060077;
     public const int FnLock = 0x00100023;
 
     public const int ScreenPadToggle = 0x00050031;
     public const int ScreenPadBrightness = 0x00050032;
+
+    public const int CameraLed = 0x00060079;
 
     public const int BootSound = 0x00130022;
 
@@ -133,7 +144,7 @@ public class AsusACPI
     public const int MinTotal = 5;
 
     public static int MaxTotal = 150;
-    public static int DefaultTotal = 125;
+    public static int DefaultTotal = 80;
 
     public const int MinCPU = 5;
     public const int MaxCPU = 100;
@@ -142,8 +153,17 @@ public class AsusACPI
     public const int MinGPUBoost = 5;
     public static int MaxGPUBoost = 25;
 
+    public static int MinGPUPower = 0;
+    public static int MaxGPUPower = 50;
+
     public const int MinGPUTemp = 75;
     public const int MaxGPUTemp = 87;
+
+    public const int PCoreMin = 4;
+    public const int ECoreMin = 0;
+
+    public const int PCoreMax = 16;
+    public const int ECoreMax = 16;
 
 
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
@@ -251,6 +271,11 @@ public class AsusACPI
             MaxTotal = 250;
         }
 
+        if (AppConfig.IsG14AMD())
+        {
+            DefaultTotal = 125;
+        }
+
         if (AppConfig.IsX13())
         {
             MaxTotal = 75;
@@ -266,6 +291,12 @@ public class AsusACPI
         if (AppConfig.IsIntelHX())
         {
             MaxTotal = 175;
+            MaxGPUPower = 70;
+        }
+
+        if (AppConfig.IsSlash())
+        {
+            MaxGPUPower = 25;
         }
 
         if (AppConfig.DynamicBoost5())
@@ -472,7 +503,11 @@ public class AsusACPI
 
         if (fanScale != 100 && device == AsusFan.CPU) Logger.WriteLine("Custom fan scale: " + fanScale);
 
-        // it seems to be a bug, when some old model's bios can go nuts if fan is set to 100% 
+        if (AppConfig.IsSwappedFans())
+        {
+            device = (device == AsusFan.CPU) ? AsusFan.GPU : AsusFan.CPU;
+            Logger.WriteLine("Swapped fan fix");
+        }
 
         for (int i = 8; i < curve.Length; i++) curve[i] = (byte)(Math.Max((byte)0, Math.Min((byte)100, curve[i])) * fanScale / 100);
 
@@ -504,15 +539,24 @@ public class AsusACPI
             default: fan_mode = 0; break;
         }
 
+        byte[] result;
+
         switch (device)
         {
             case AsusFan.GPU:
-                return DeviceGetBuffer(DevsGPUFanCurve, fan_mode);
+                result = DeviceGetBuffer(DevsGPUFanCurve, fan_mode);
+                break;
             case AsusFan.Mid:
-                return DeviceGetBuffer(DevsMidFanCurve, fan_mode);
+                result = DeviceGetBuffer(DevsMidFanCurve, fan_mode);
+                break;
             default:
-                return DeviceGetBuffer(DevsCPUFanCurve, fan_mode);
+                result = DeviceGetBuffer(DevsCPUFanCurve, fan_mode);
+                break;
         }
+
+        //Logger.WriteLine($"GetFan {device} :" + BitConverter.ToString(result));
+
+        return result;
 
     }
 
@@ -655,21 +699,54 @@ public class AsusACPI
         }
     }
 
-    public void ScanRange()
+    public (int, int) GetCores(bool max = false)
+    {
+        int value = Program.acpi.DeviceGet(max ? CORES_MAX : CORES_CPU);
+        //value = max ? 0x406 : 0x605;
+
+        if (value < 0) return (-1, -1);
+        Logger.WriteLine("Cores" + (max ? "Max" : "") + ": 0x" + value.ToString("X4"));
+
+        return ((value >> 8) & 0xFF, (value) & 0xFF);
+    }
+
+    public void SetCores(int eCores, int pCores)
+    {
+        if (eCores < ECoreMin || eCores > ECoreMax || pCores < PCoreMin || pCores > PCoreMax)
+        {
+            Logger.WriteLine($"Incorrect Core config ({eCores}, {pCores})");
+            return;
+        };
+
+        int value = (eCores << 8) | pCores;
+        Program.acpi.DeviceSet(CORES_CPU, value, "Cores (0x" + value.ToString("X4") + ")");
+    }
+
+    public string ScanRange()
     {
         int value;
         string appPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\GHelper";
         string logFile = appPath + "\\scan.txt";
-        for (uint i = 0x00000000; i <= 0x00160000; i++)
+        using (StreamWriter w = File.AppendText(logFile))
         {
-            value = DeviceGet(i);
-            if (value >= 0)
-                using (StreamWriter w = File.AppendText(logFile))
+            w.WriteLine($"Scan started {DateTime.Now}");
+            for (uint i = 0x00000000; i <= 0x00160000; i += 0x10000)
+            {
+                for (uint j = 0x00; j <= 0xFF; j++)
                 {
-                    w.WriteLine(i.ToString("X8") + ": " + value.ToString("X4") + " (" + value + ")");
-                    w.Close();
+                    uint id = i + j;
+                    value = DeviceGet(id);
+                    if (value >= 0)
+                    {
+                        w.WriteLine(id.ToString("X8") + ": " + value.ToString("X4") + " (" + value + ")");
+                    }
                 }
+            }
+            w.WriteLine($"---------------------");
+            w.Close();
         }
+
+        return logFile;
 
     }
 

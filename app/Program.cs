@@ -37,7 +37,7 @@ namespace GHelper
 
         public static ToastForm toast = new ToastForm();
 
-        public static IntPtr unRegPowerNotify;
+        public static IntPtr unRegPowerNotify, unRegPowerNotifyLid;
 
         private static long lastAuto;
         private static long lastTheme;
@@ -110,8 +110,8 @@ namespace GHelper
             clamshellControl.ToggleLidAction();
 
             // Subscribing for monitor power on events
-            PowerSettingGuid settingGuid = new NativeMethods.PowerSettingGuid();
-            unRegPowerNotify = NativeMethods.RegisterPowerSettingNotification(settingsForm.Handle, settingGuid.ConsoleDisplayState, NativeMethods.DEVICE_NOTIFY_WINDOW_HANDLE);
+            unRegPowerNotify = NativeMethods.RegisterPowerSettingNotification(settingsForm.Handle, PowerSettingGuid.ConsoleDisplayState, NativeMethods.DEVICE_NOTIFY_WINDOW_HANDLE);
+            unRegPowerNotifyLid = NativeMethods.RegisterPowerSettingNotification(settingsForm.Handle, PowerSettingGuid.LIDSWITCH_STATE_CHANGE, NativeMethods.DEVICE_NOTIFY_WINDOW_HANDLE);
 
 
             Task task = Task.Run((Action)PeripheralsProvider.DetectAllAsusMice);
@@ -229,10 +229,15 @@ namespace GHelper
 
             BatteryControl.AutoBattery(init);
 
-            settingsForm.AutoKeyboard();
-            settingsForm.matrixControl.SetMatrix(true);
+            settingsForm.matrixControl.SetDevice(true);
 
-            allyControl.Init();
+            if (AppConfig.IsAlly())
+            {
+                allyControl.Init();
+            } else
+            {
+                settingsForm.AutoKeyboard();
+            }
         }
 
         private static void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
@@ -242,6 +247,13 @@ namespace GHelper
             {
                 Logger.WriteLine("Power Mode Changed:" + e.Mode.ToString());
                 gpuControl.StandardModeFix();
+            }
+
+            int delay = AppConfig.Get("charger_delay");
+            if (delay > 0)
+            {
+                Logger.WriteLine($"Charger Delay: {delay}");
+                Thread.Sleep(delay);
             }
 
             if (SystemInformation.PowerStatus.PowerLineStatus == isPlugged) return;
@@ -254,7 +266,7 @@ namespace GHelper
             {
                 // If helper window is not on top, this just focuses on the app again
                 // Pressing the ghelper button again will hide the app
-                if (checkForFocus && !settingsForm.HasAnyFocus(trayClick))
+                if (checkForFocus && !settingsForm.HasAnyFocus(trayClick) && !AppConfig.Is("topmost"))
                 {
                     settingsForm.ShowAll();
                 }
@@ -273,7 +285,11 @@ namespace GHelper
                 settingsForm.Activate();
 
                 settingsForm.Left = Screen.FromControl(settingsForm).WorkingArea.Width - 10 - settingsForm.Width;
-                settingsForm.Top = Screen.FromControl(settingsForm).WorkingArea.Height - 10 - settingsForm.Height;
+                
+                if (AppConfig.IsAlly())
+                    settingsForm.Top = Math.Max(10, Screen.FromControl(settingsForm).Bounds.Height - 110 - settingsForm.Height);
+                else
+                    settingsForm.Top = Screen.FromControl(settingsForm).WorkingArea.Height - 10 - settingsForm.Height;
 
                 settingsForm.VisualiseGPUMode();
             }
@@ -294,6 +310,7 @@ namespace GHelper
             PeripheralsProvider.UnregisterForDeviceEvents();
             clamshellControl.UnregisterDisplayEvents();
             NativeMethods.UnregisterPowerSettingNotification(unRegPowerNotify);
+            NativeMethods.UnregisterPowerSettingNotification(unRegPowerNotifyLid);
             Application.Exit();
         }
 

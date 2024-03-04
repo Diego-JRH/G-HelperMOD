@@ -85,7 +85,7 @@ namespace GHelper.Input
 
             InitBacklightTimer();
 
-            if (AppConfig.ContainsModel("VivoBook")) Program.acpi.DeviceSet(AsusACPI.FnLock, AppConfig.Is("fn_lock") ? 1 : 0, "FnLock");
+            if (AppConfig.IsVivoZenbook()) Program.acpi.DeviceSet(AsusACPI.FnLock, AppConfig.Is("fn_lock") ? 1 : 0, "FnLock");
 
         }
 
@@ -146,11 +146,12 @@ namespace GHelper.Input
                 hook.RegisterHotKey(ModifierKeys.Shift | ModifierKeys.Control | ModifierKeys.Alt, Keys.F1);
                 hook.RegisterHotKey(ModifierKeys.Shift | ModifierKeys.Control | ModifierKeys.Alt, Keys.F2);
                 hook.RegisterHotKey(ModifierKeys.Shift | ModifierKeys.Control | ModifierKeys.Alt, Keys.F3);
+                hook.RegisterHotKey(ModifierKeys.Shift | ModifierKeys.Control | ModifierKeys.Alt, Keys.F4);
             }
 
             // FN-Lock group
 
-            if (AppConfig.Is("fn_lock") && !AppConfig.ContainsModel("VivoBook"))
+            if (AppConfig.Is("fn_lock") && !AppConfig.IsVivoZenbook())
                 for (Keys i = Keys.F1; i <= Keys.F11; i++) hook.RegisterHotKey(ModifierKeys.None, i);
 
             // Arrow-lock group
@@ -246,10 +247,10 @@ namespace GHelper.Input
         public void KeyPressed(object sender, KeyPressedEventArgs e)
         {
 
+            Logger.WriteLine(e.Key.ToString() + " " + e.Modifier.ToString());
+
             if (e.Modifier == ModifierKeys.None)
             {
-                Logger.WriteLine(e.Key.ToString());
-
                 if (AppConfig.NoMKeys())
                 {
                     switch (e.Key)
@@ -374,6 +375,9 @@ namespace GHelper.Input
                     case Keys.F3:
                         Program.settingsForm.gpuControl.ToggleXGM(true);
                         break;
+                    case Keys.F4:
+                        Program.settingsForm.BeginInvoke(Program.settingsForm.allyControl.ToggleModeHotkey);
+                        break;
                     case Keys.F14:
                         Program.settingsForm.gpuControl.SetGPUMode(AsusACPI.GPUModeEco);
                         break;
@@ -496,7 +500,7 @@ namespace GHelper.Input
                 case "micmute":
                     bool muteStatus = Audio.ToggleMute();
                     Program.toast.RunToast(muteStatus ? "Muted" : "Unmuted", muteStatus ? ToastIcon.MicrophoneMute : ToastIcon.Microphone);
-                    if (AppConfig.IsVivobook()) Program.acpi.DeviceSet(AsusACPI.MICMUTE_LED, muteStatus ? 1 : 0, "MicmuteLed");
+                    if (AppConfig.IsVivoZenbook()) Program.acpi.DeviceSet(AsusACPI.MicMuteLed, muteStatus ? 1 : 0, "MicmuteLed");
                     break;
                 case "brightness_up":
                     SetBrightness(+10);
@@ -515,6 +519,9 @@ namespace GHelper.Input
                     break;
                 case "calculator":
                     LaunchProcess("calc");
+                    break;
+                case "controller":
+                    Program.settingsForm.BeginInvoke(Program.settingsForm.allyControl.ToggleModeHotkey);
                     break;
                 default:
                     break;
@@ -561,7 +568,7 @@ namespace GHelper.Input
             int fnLock = AppConfig.Is("fn_lock") ? 0 : 1;
             AppConfig.Set("fn_lock", fnLock);
 
-            if (AppConfig.ContainsModel("VivoBook"))
+            if (AppConfig.IsVivoZenbook())
                 Program.acpi.DeviceSet(AsusACPI.FnLock, fnLock == 1 ? 1 : 0, "FnLock");
             else
                 Program.settingsForm.BeginInvoke(Program.inputDispatcher.RegisterKeys);
@@ -621,6 +628,9 @@ namespace GHelper.Input
             {
                 switch (EventID)
                 {
+                    case 134:     // FN + F12 ON OLD DEVICES
+                        KeyProcess("m4");
+                        return;
                     case 124:    // M3
                         KeyProcess("m3");
                         return;
@@ -631,7 +641,7 @@ namespace GHelper.Input
                         KeyProcess("m6");
                         return;
                     case 136:    // FN + F12
-                        Program.acpi.DeviceSet(AsusACPI.UniversalControl, AsusACPI.Airplane, "Airplane");
+                        if (!AppConfig.IsNoAirplaneMode()) Program.acpi.DeviceSet(AsusACPI.UniversalControl, AsusACPI.Airplane, "Airplane");
                         return;
                     case 181:    // FN + Numpad Enter
                         KeyProcess("fne");
@@ -698,6 +708,9 @@ namespace GHelper.Input
                     }
                     else
                         Program.acpi.DeviceSet(AsusACPI.UniversalControl, AsusACPI.Brightness_Up, "Brightness");
+                    break;
+                case 133: // Camera Toggle
+                    ToggleCamera();
                     break;
                 case 107: // FN+F10
                     ToggleTouchpadEvent();
@@ -777,6 +790,36 @@ namespace GHelper.Input
             Program.toast.RunToast($"Screen Pad " + (toggle == 1 ? "On" : "Off"), toggle > 0 ? ToastIcon.BrightnessUp : ToastIcon.BrightnessDown);
         }
 
+        public static void ToggleCamera()
+        {
+            if (!ProcessHelper.IsUserAdministrator()) return;
+
+            string CameraRegistryKeyPath = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\webcam";
+            string CameraRegistryValueName = "Value";
+
+            try
+            {
+                var status = (string?)Registry.GetValue(CameraRegistryKeyPath, CameraRegistryValueName, "");
+
+                if (status == "Allow") status = "Deny";
+                else if (status == "Deny") status = "Allow";
+                else
+                {
+                    Logger.WriteLine("Unknown camera status");
+                    return;
+                }
+
+                Registry.SetValue(CameraRegistryKeyPath, CameraRegistryValueName, status, RegistryValueKind.String);
+                Program.acpi.DeviceSet(AsusACPI.CameraLed, (status == "Deny" ? 1 : 0), "Camera");
+                Program.toast.RunToast($"Camera " + (status == "Deny" ? "Off" : "On"));
+
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine(ex.ToString());
+            }
+
+        }
 
         public static void SetScreenpad(int delta)
         {
@@ -847,6 +890,7 @@ namespace GHelper.Input
             if (e.NewEvent is null) return;
             int EventID = int.Parse(e.NewEvent["EventID"].ToString());
             Logger.WriteLine("WMI event " + EventID);
+            if (AppConfig.NoWMI()) return;
             HandleEvent(EventID);
         }
     }
