@@ -32,7 +32,7 @@ namespace GHelper
         public static ModeControl modeControl = new ModeControl();
         public static GPUModeControl gpuControl = new GPUModeControl(settingsForm);
         public static AllyControl allyControl = new AllyControl(settingsForm);
-        public static ScreenControl screenControl = new ScreenControl();
+        public static ScreenControl screenControl = new ScreenControl(); 
         public static ClamshellModeControl clamshellControl = new ClamshellModeControl();
 
         public static ToastForm toast = new ToastForm();
@@ -215,6 +215,8 @@ namespace GHelper
             isPlugged = SystemInformation.PowerStatus.PowerLineStatus;
             Logger.WriteLine("AutoSetting for " + isPlugged.ToString());
 
+            BatteryControl.AutoBattery(init);
+
             inputDispatcher.Init();
 
             modeControl.AutoPerformance(powerChanged);
@@ -226,8 +228,6 @@ namespace GHelper
                 gpuControl.InitGPUMode();
                 screenControl.AutoScreen();
             }
-
-            BatteryControl.AutoBattery(init);
 
             settingsForm.matrixControl.SetDevice(true);
 

@@ -244,6 +244,13 @@ namespace GHelper.Input
 
         }
 
+        static void SetBrightnessDimming(int delta)
+        {
+            int brightness = VisualControl.SetBrightness(delta: delta);
+            if (brightness >= 0)
+                Program.toast.RunToast(brightness + "%", (delta < 0) ? ToastIcon.BrightnessDown : ToastIcon.BrightnessUp);
+        }
+
         public void KeyPressed(object sender, KeyPressedEventArgs e)
         {
 
@@ -478,6 +485,9 @@ namespace GHelper.Input
                 case "aura":
                     Program.settingsForm.BeginInvoke(Program.settingsForm.CycleAuraMode);
                     break;
+                case "visual":
+                    Program.settingsForm.BeginInvoke(Program.settingsForm.CycleVisualMode);
+                    break;
                 case "performance":
                     modeControl.CyclePerformanceMode(Control.ModifierKeys == Keys.Shift);
                     break;
@@ -653,6 +663,9 @@ namespace GHelper.Input
                     case 178:   // FN+F4
                         KeyProcess("fnf4");
                         return;
+                    case 138:   // Fn + V
+                        KeyProcess("fnv");
+                        return;
                     case 158:   // Fn + C
                         KeyProcess("fnc");
                         return;
@@ -676,7 +689,8 @@ namespace GHelper.Input
                         return;
                     case 51:    // Fn+F6 on old TUFs
                     case 53:    // Fn+F6 on GA-502DU model
-                        NativeMethods.TurnOffScreen();
+                        SleepEvent();
+                        //NativeMethods.TurnOffScreen();
                         return;
                 }
             }
@@ -697,8 +711,14 @@ namespace GHelper.Input
                         if (AppConfig.IsDUO()) SetScreenpad(-10);
                         else Program.settingsForm.BeginInvoke(Program.settingsForm.CycleMatrix, -1);
                     }
+                    else if (Control.ModifierKeys == Keys.Control && AppConfig.IsOLED())
+                    {
+                        SetBrightnessDimming(-10);
+                    }
                     else
+                    {
                         Program.acpi.DeviceSet(AsusACPI.UniversalControl, AsusACPI.Brightness_Down, "Brightness");
+                    }
                     break;
                 case 32: // FN+F8
                     if (Control.ModifierKeys == Keys.Shift)
@@ -706,8 +726,14 @@ namespace GHelper.Input
                         if (AppConfig.IsDUO()) SetScreenpad(10);
                         else Program.settingsForm.BeginInvoke(Program.settingsForm.CycleMatrix, 1);
                     }
+                    else if (Control.ModifierKeys == Keys.Control && AppConfig.IsOLED())
+                    {
+                        SetBrightnessDimming(10);
+                    }
                     else
+                    {
                         Program.acpi.DeviceSet(AsusACPI.UniversalControl, AsusACPI.Brightness_Up, "Brightness");
+                    }
                     break;
                 case 133: // Camera Toggle
                     ToggleCamera();
