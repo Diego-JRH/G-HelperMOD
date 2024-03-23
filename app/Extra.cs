@@ -146,6 +146,7 @@ namespace GHelper
             labelBacklightLogo.Text = Properties.Strings.Logo;
 
             checkGpuApps.Text = Properties.Strings.KillGpuApps;
+            checkBWIcon.Text = Properties.Strings.BWTrayIcon;
             labelHibernateAfter.Text = Properties.Strings.HibernateAfter;
 
             labelAPUMem.Text = Properties.Strings.APUMemory;
@@ -207,6 +208,11 @@ namespace GHelper
             if (!AppConfig.IsTUF())
             {
                 labelFNE.Visible = comboFNE.Visible = textFNE.Visible = false;
+            }
+
+            if (AppConfig.IsNoFNV())
+            {
+                labelFNV.Visible = comboFNV.Visible = textFNV.Visible = false;
             }
 
             if (Program.acpi.DeviceGet(AsusACPI.GPUEco) < 0)
@@ -397,6 +403,9 @@ namespace GHelper
             checkBootSound.Checked = (Program.acpi.DeviceGet(AsusACPI.BootSound) == 1);
             checkBootSound.CheckedChanged += CheckBootSound_CheckedChanged;
 
+            checkBWIcon.Checked = AppConfig.IsBWIcon();
+            checkBWIcon.CheckedChanged += CheckBWIcon_CheckedChanged;
+
             pictureHelp.Click += PictureHelp_Click;
             buttonServices.Click += ButtonServices_Click;
 
@@ -415,6 +424,12 @@ namespace GHelper
 
             InitACPITesting();
 
+        }
+
+        private void CheckBWIcon_CheckedChanged(object? sender, EventArgs e)
+        {
+            AppConfig.Set("bw_icon", (checkBWIcon.Checked ? 1 : 0));
+            Program.settingsForm.VisualiseIcon();
         }
 
         private void InitACPITesting()
