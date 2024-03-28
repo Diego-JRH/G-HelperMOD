@@ -494,6 +494,9 @@
   <data name="LaptopScreen" xml:space="preserve">
     <value>Ecran Laptop</value>
   </data>
+  <data name="LEDStatusIndicators" xml:space="preserve">
+    <value>LED Status Indicators</value>
+  </data>
   <data name="Lid" xml:space="preserve">
     <value>Capac</value>
   </data>
@@ -766,6 +769,12 @@
   </data>
   <data name="VisualMode" xml:space="preserve">
     <value>Visual Mode</value>
+  </data>
+  <data name="VisualModesHDR" xml:space="preserve">
+    <value>Visual Modes are not available when HDR is active</value>
+  </data>
+  <data name="VisualModesScreen" xml:space="preserve">
+    <value>Visual Modes are not available when laptop screen is off</value>
   </data>
   <data name="VolumeDown" xml:space="preserve">
     <value>Buton scădere volum</value>

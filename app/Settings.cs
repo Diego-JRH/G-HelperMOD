@@ -256,13 +256,29 @@ namespace GHelper
             VisualiseFnLock();
             buttonFnLock.Click += ButtonFnLock_Click;
 
+            labelVisual.Click += LabelVisual_Click;
+            labelCharge.Click += LabelCharge_Click;
+
             panelPerformance.Focus();
             InitVisual();
         }
 
+        private void LabelCharge_Click(object? sender, EventArgs e)
+        {
+            ProcessHelper.RunCMD("powershell", "powercfg /batteryreport");
+            ProcessHelper.RunCMD("explorer", "battery-report.html");
+        }
+
+        private void LabelVisual_Click(object? sender, EventArgs e)
+        {
+            labelVisual.Visible = false;
+            VisualControl.forceVisual = true;
+        }
 
         public void InitVisual()
         {
+
+            if (AppConfig.Is("hide_visual")) return;
 
             if (AppConfig.IsOLED())
             {
@@ -346,6 +362,9 @@ namespace GHelper
 
         public void CycleVisualMode()
         {
+
+            if (comboVisual.Items.Count < 1) return ;
+
             if (comboVisual.SelectedIndex < comboVisual.Items.Count - 1)
                 comboVisual.SelectedIndex += 1;
             else
@@ -1199,6 +1218,21 @@ namespace GHelper
             {
                 buttonMiniled.Visible = false;
             }
+
+            if (hdr) labelVisual.Text = Properties.Strings.VisualModesHDR;
+            if (!screenEnabled) labelVisual.Text = Properties.Strings.VisualModesScreen;
+
+            if (!screenEnabled || hdr)
+            {
+                labelVisual.Location = tableVisual.Location;
+                labelVisual.Width = tableVisual.Width;
+                labelVisual.Height = tableVisual.Height;
+                labelVisual.Visible = true;
+            } else
+            {
+                labelVisual.Visible = false;
+            }
+
 
         }
 

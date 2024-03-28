@@ -494,6 +494,9 @@
   <data name="LaptopScreen" xml:space="preserve">
     <value>Pantalla del portátil</value>
   </data>
+  <data name="LEDStatusIndicators" xml:space="preserve">
+    <value>Indicadores de estado LED</value>
+  </data>
   <data name="Lid" xml:space="preserve">
     <value>Tapa</value>
   </data>
@@ -766,6 +769,12 @@
   </data>
   <data name="VisualMode" xml:space="preserve">
     <value>Modo visual</value>
+  </data>
+  <data name="VisualModesHDR" xml:space="preserve">
+    <value>Los modos visuales no están disponibles cuando el HDR está activo</value>
+  </data>
+  <data name="VisualModesScreen" xml:space="preserve">
+    <value>Los modos visuales no están disponibles cuando la pantalla portátil está apagada</value>
   </data>
   <data name="VolumeDown" xml:space="preserve">
     <value>Bajar volumen</value>
