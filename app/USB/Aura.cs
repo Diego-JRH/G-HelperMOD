@@ -268,25 +268,6 @@ namespace GHelper.USB
                 Encoding.ASCII.GetBytes("]ASUS Tech.Inc."),
                 new byte[] { AsusHid.AURA_ID, 0x05, 0x20, 0x31, 0, 0x1A },
             }, "Init");
-
-            // Random data AC sends to keyboard on start, that seem to wake up keyboard on 2024 
-            if (AppConfig.IsNewAura())
-            {
-                AsusHid.Write(new List<byte[]> {
-                    new byte[] { AsusHid.AURA_ID, 0x9F, 0x01 },
-                    new byte[] { AsusHid.AURA_ID, 0xBF },
-
-                    new byte[] { AsusHid.AURA_ID, 0x05, 0x20, 0x31, 0, 0x10 },
-                    new byte[] { AsusHid.AURA_ID, 0x05, 0x20, 0x31, 0, 0x20 },
-
-                    new byte[] { AsusHid.AURA_ID, 0xC0, 0x03, 0x01 },
-                    new byte[] { AsusHid.AURA_ID, 0x9E, 0x01, 0x20 },
-
-                    Encoding.ASCII.GetBytes("]ASUS Tech.Inc."),
-                    new byte[] { AsusHid.AURA_ID, 0x05, 0x20, 0x31, 0, 0x1A },
-                    new byte[] { AsusHid.AURA_ID, 0xC0, 0x00, 0x01 },
-                }, "Init");
-            }
         }
 
 
@@ -438,8 +419,8 @@ namespace GHelper.USB
            105,  106,  107,  108,  109,  110,  111,  112,  113,  114,  115,  116,  117,  118,  119,  139,  121,  122,  123,  124,  125,
         /* LCTL  LFNC  LWIN  LALT              SPC               RALT  RFNC  RCTL        ARWL  ARWD  ARWR PRT15        NM0   NMPD  NMER  */
            126,  127,  128,  129,              131,              135,  136,  137,        159,  160,  161,  142,        144,  145,  146,
-        /* LB1   LB2   LB3                                                                                             LB4   LB5   LB6   */
-           174,  173,  172,                                                                                            171,  170,  169,
+        /* LB1   LB2   LB3                                                               ARW?  ARWL? ARWD? ARWR?       LB4   LB5   LB6   */
+           174,  173,  172,                                                              120,  140,  141,  143,        171,  170,  169,
         /* KSTN  LOGO  LIDL  LIDR  */
              0,  167,  176,  177,
 
@@ -462,8 +443,8 @@ namespace GHelper.USB
              0,    0,    0,    0,    1,    1,    1,    1,    2,    2,    2,    2,    3,    3,    3,    3,    3,    3,    3,    3,    3,
         /* LCTL  LFNC  LWIN  LALT              SPC               RALT  RFNC  RCTL        ARWL  ARWD  ARWR PRT15        NM0   NMPD  NMER  */
              0,    0,    0,    0,              1,                  2,    2,    2,          3,    3,    3,    3,          3,    3,    3,
-        /* LB1   LB1   LB3                                                                                             LB4   LB5   LB6   */
-             5,    5,    4,                                                                                              6,    7,    7,
+        /* LB1   LB1   LB3                                                               ARW?  ARW?  ARW?  ARW?        LB4   LB5   LB6   */
+             5,    5,    4,                                                                3,    3,    3,    3,          6,    7,    7,
         /* KSTN  LOGO  LIDL  LIDR  */
              3,    0,    0,    3,
 
@@ -486,8 +467,8 @@ namespace GHelper.USB
              0,    0,    0,    0,    0,    1,    1,    1,    1,    1,    2,    2,    2,    2,    2,     2,   3,    3,    3,    3,    3,
         /* LCTL  LFNC  LWIN  LALT              SPC               RALT  RFNC  RCTL        ARWL  ARWD  ARWR PRT15        NM0   NMPD  NMER  */
              0,    0,    0,    0,              1,                  1,    2,    2,          2,    2,    2,    3,          3,    3,    3,
-        /* LB1   LB1   LB3                                                                                             LB4   LB5   LB6   */
-             5,    5,    4,                                                                                              6,    7,    7,
+        /* LB1   LB1   LB3                                                               ARW?  ARW?  ARW?  ARW?        LB4   LB5   LB6   */
+             5,    5,    4,                                                                2,    2,    2,    3,          6,    7,    7,
         /* KSTN  LOGO  LIDL  LIDR  */
              3,    0,    0,    3,
 
@@ -611,6 +592,7 @@ namespace GHelper.USB
             if (init || initDirect)
             {
                 initDirect = false;
+                Init();
                 AsusHid.WriteAura(new byte[] { AsusHid.AURA_ID, 0xbc, 1 });
             }
 

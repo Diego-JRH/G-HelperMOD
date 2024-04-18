@@ -1,7 +1,7 @@
 # G-Helper - Lightweight control tool for Asus laptops
 [![United24](https://raw.githubusercontent.com/seerge/g-helper/main/docs/ua.png)](https://u24.gov.ua/)
 [![GitHub release](https://img.shields.io/github/release/seerge/g-helper)](https://GitHub.com/seerge/g-helper/releases/) 
-[![Github all releases](https://img.shields.io/github/downloads/seerge/g-helper/total)](https://GitHub.com/seerge/g-helper/releases/) [![GitHub stars](https://img.shields.io/github/stars/seerge/g-helper.svg?style=social)](https://GitHub.com/seerge/g-helper/stargazers/) 
+[![Github all releases](https://img.shields.io/github/downloads/seerge/g-helper/total)](https://GitHub.com/seerge/g-helper/releases/) [![GitHub stars](https://img.shields.io/github/stars/seerge/g-helper.svg?style=social)](https://GitHub.com/seerge/g-helper/stargazers/) <sup>[中文版点这里](https://github.com/seerge/g-helper/blob/main/docs/README.zh-CN.md)</sup>
 
 Small and lightweight Armoury Crate alternative for Asus laptops offering almost same functionality without extra load and unnecessary services. 
 Works with all popular models, such as ROG Zephyrus G14, G15, G16, M16, Flow X13, Flow X16, Flow Z13, TUF Series, Strix / Scar Series, ProArt, Vivobook, Zenbook, ROG Ally and many more! 
@@ -13,7 +13,7 @@ Works with all popular models, such as ROG Zephyrus G14, G15, G16, M16, Flow X13
 - [Troubleshooting](https://github.com/seerge/g-helper/wiki/Troubleshooting)
 - [Power User Settings](https://github.com/seerge/g-helper/wiki/Power-user-settings)
 
-### Support project in [:euro: EUR](https://www.paypal.com/donate/?hosted_button_id=4HMSHS4EBQWTA) or [💵 USD](https://www.paypal.com/donate/?hosted_button_id=SRM6QUX6ACXDY) 
+### Support project : [:euro: Paypal EUR](https://www.paypal.com/donate/?hosted_button_id=4HMSHS4EBQWTA) | [💵 Paypal USD](https://www.paypal.com/donate/?hosted_button_id=SRM6QUX6ACXDY)  | [🪙 Stripe](https://buy.stripe.com/00gaFJ9Lf79v7WobII)
 
 [![G-Helper Download](https://github.com/seerge/g-helper/assets/5920850/4d98465a-63a5-4498-ae14-afb3e67e7e82)](https://github.com/seerge/g-helper/releases/latest/download/GHelper.zip)
 
@@ -38,7 +38,7 @@ Works with all popular models, such as ROG Zephyrus G14, G15, G16, M16, Flow X13
 2. GPU modes: Eco - Standard - Ultimate - Optimized
 3. Screen refresh rate control with display overdrive (OD) 
 4. Custom fan curve editor, power limits and turbo boost selection for every performance mode
-5. Anime Matrix or Slash Lightning control including animated GIFs, clock and Audio visualizer
+5. Anime Matrix or Slash Lighting control including animated GIFs, clock and Audio visualizer
 6. Backlight animation modes and colors 
 7. Custom hotkeys (M-keys, FN+X keys)
 8. Monitor CPU and GPU temperature, fan speeds and battery status
@@ -113,9 +113,10 @@ Huge thanks to [@IceStormNG](https://github.com/IceStormNG) 👑 for contributio
 - ``Ctrl + M1 / M2`` - Screen brightness Down / Up
 - ``Shift + M1 / M2`` - Backlight brightness Down / Up
 - ``Fn + C`` - Fn-Lock
-- ``Fn + Shift + F7 / F8`` - Matrix / Slash Lightning brightness Down / Up
+- ``Fn + Shift + F7 / F8`` - Matrix / Slash Lighting brightness Down / Up
 - ``Fn + Shift + F7 / F8`` - Screenpad brightness Down / Up
 - ``Ctrl + Shift + F20`` - Mute Microphone
+- ``Ctrl + Shift + Alt + F13`` - Toggle Display Refresh Rate
 - ``Ctrl + Shift + Alt + F14`` - Eco GPU Mode
 - ``Ctrl + Shift + Alt + F15`` - Standard GPU Mode
 - ``Ctrl + Shift + Alt + F16`` - Silent

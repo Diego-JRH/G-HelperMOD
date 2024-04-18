@@ -138,9 +138,9 @@ namespace GHelper
             buttonOptimized.BorderColor = colorEco;
             buttonXGM.BorderColor = colorTurbo;
 
-            button60Hz.BorderColor = SystemColors.ActiveBorder;
-            button120Hz.BorderColor = SystemColors.ActiveBorder;
-            buttonScreenAuto.BorderColor = SystemColors.ActiveBorder;
+            button60Hz.BorderColor = colorGray;
+            button120Hz.BorderColor = colorGray;
+            buttonScreenAuto.BorderColor = colorGray;
             buttonMiniled.BorderColor = colorTurbo;
 
             buttonSilent.Click += ButtonSilent_Click;
@@ -265,8 +265,7 @@ namespace GHelper
 
         private void LabelCharge_Click(object? sender, EventArgs e)
         {
-            ProcessHelper.RunCMD("powershell", "powercfg /batteryreport");
-            ProcessHelper.RunCMD("explorer", "battery-report.html");
+            BatteryControl.BatteryReport();
         }
 
         private void LabelVisual_Click(object? sender, EventArgs e)
@@ -1068,7 +1067,7 @@ namespace GHelper
 
             if (matrixControl.IsSlash)
             {
-                labelMatrix.Text = "Slash Lightning";
+                labelMatrix.Text = "Slash Lighting";
                 comboMatrixRunning.Items.Clear();
 
                 foreach (var item in SlashDevice.Modes)
@@ -1686,7 +1685,7 @@ namespace GHelper
             sliderBattery.Value = limit;
 
             sliderBattery.AccessibleName = Properties.Strings.BatteryChargeLimit + ": " + limit.ToString() + "%";
-            sliderBattery.AccessibilityObject.Select(AccessibleSelection.TakeFocus);
+            //sliderBattery.AccessibilityObject.Select(AccessibleSelection.TakeFocus);
 
             VisualiseBatteryFull();
         }
