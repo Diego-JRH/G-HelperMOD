@@ -13,7 +13,7 @@ Works with all popular models, such as ROG Zephyrus G14, G15, G16, M16, Flow X13
 - [Troubleshooting](https://github.com/seerge/g-helper/wiki/Troubleshooting)
 - [Power User Settings](https://github.com/seerge/g-helper/wiki/Power-user-settings)
 
-### Support project : [:euro: Paypal EUR](https://www.paypal.com/donate/?hosted_button_id=4HMSHS4EBQWTA) | [💵 Paypal USD](https://www.paypal.com/donate/?hosted_button_id=SRM6QUX6ACXDY)  | [🪙 Stripe](https://buy.stripe.com/00gaFJ9Lf79v7WobII)
+### Support project : [:euro: Paypal EUR](https://www.paypal.com/donate/?hosted_button_id=4HMSHS4EBQWTA) | [💵 Paypal USD](https://www.paypal.com/donate/?hosted_button_id=SRM6QUX6ACXDY)
 
 [![G-Helper Download](https://github.com/seerge/g-helper/assets/5920850/4d98465a-63a5-4498-ae14-afb3e67e7e82)](https://github.com/seerge/g-helper/releases/latest/download/GHelper.zip)
 
@@ -115,6 +115,7 @@ Huge thanks to [@IceStormNG](https://github.com/IceStormNG) 👑 for contributio
 - ``Ctrl + M1 / M2`` - Screen brightness Down / Up
 - ``Shift + M1 / M2`` - Backlight brightness Down / Up
 - ``Fn + C`` - Fn-Lock
+- ``Fn + Ctrl +  F7 / F8`` - Flicker-free dimming Down / Up
 - ``Fn + Shift + F7 / F8`` - Matrix / Slash Lighting brightness Down / Up
 - ``Fn + Shift + F7 / F8`` - Screenpad brightness Down / Up
 - ``Ctrl + Shift + F20`` - Mute Microphone

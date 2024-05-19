@@ -13,6 +13,7 @@ namespace GHelper.Helpers
                 "ASUSLinkNear",
                 "ASUSLinkRemote",
                 "ASUSSoftwareManager",
+                "ASUSLiveUpdateAgent",
                 "ASUSSwitch",
                 "ASUSSystemAnalysis",
                 "ASUSSystemDiagnosis",
@@ -21,11 +22,13 @@ namespace GHelper.Helpers
 
         static List<string> processesAC = new() {
                 "ArmouryCrateSE.Service",
+                "ArmouryCrate.Service",
                 "LightingService",
         };
 
         static List<string> servicesAC = new() {
                 "ArmouryCrateSEService",
+                "ArmouryCrateService",
                 "LightingService",
         };
 
@@ -48,7 +51,7 @@ namespace GHelper.Helpers
                 if (Process.GetProcessesByName(service).Count() > 0) count++;
             }
 
-            if (AppConfig.IsAlly())
+            if (AppConfig.IsStopAC())
                 foreach (string service in processesAC)
                 {
                     if (Process.GetProcessesByName(service).Count() > 0)
@@ -69,7 +72,7 @@ namespace GHelper.Helpers
                 ProcessHelper.StopDisableService(service);
             }
 
-            if (AppConfig.IsAlly())
+            if (AppConfig.IsStopAC())
             {
                 foreach (string service in servicesAC)
                 {
@@ -87,7 +90,7 @@ namespace GHelper.Helpers
                 ProcessHelper.StartEnableService(service);
             }
 
-            if (AppConfig.IsAlly())
+            if (AppConfig.IsStopAC())
             {
                 foreach (string service in servicesAC)
                 {

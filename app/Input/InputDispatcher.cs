@@ -490,8 +490,8 @@ namespace GHelper.Input
                     break;
                 case "miniled":
                     if (ScreenCCD.GetHDRStatus()) return;
-                    int miniled = screenControl.ToogleMiniled();
-                    Program.toast.RunToast(miniled == 1 ? "Multi-Zone" : "Single-Zone", miniled == 1 ? ToastIcon.BrightnessUp : ToastIcon.BrightnessDown);
+                    string miniledName = screenControl.ToogleMiniled();
+                    Program.toast.RunToast(miniledName, miniledName == Properties.Strings.OneZone ? ToastIcon.BrightnessDown : ToastIcon.BrightnessUp);
                     break;
                 case "aura":
                     Program.settingsForm.BeginInvoke(Program.settingsForm.CycleAuraMode);
@@ -543,6 +543,11 @@ namespace GHelper.Input
                     break;
                 case "controller":
                     Program.settingsForm.BeginInvoke(Program.settingsForm.allyControl.ToggleModeHotkey);
+                    break;
+                case "touchscreen":
+                    var touchscreenStatus = TouchscreenHelper.ToggleTouchscreen();
+                    if (touchscreenStatus is not null)
+                        Program.toast.RunToast(Properties.Strings.Touchscreen + " " + ((bool)touchscreenStatus ? Properties.Strings.On : Properties.Strings.Off), ToastIcon.Touchpad);
                     break;
                 default:
                     break;

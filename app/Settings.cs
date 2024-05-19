@@ -409,14 +409,11 @@ namespace GHelper
 
         private void ComboGamut_SelectedValueChanged(object? sender, EventArgs e)
         {
-            AppConfig.Set("gamut", (int)comboGamut.SelectedValue);
             VisualControl.SetGamut((int)comboGamut.SelectedValue);
         }
 
         private void ComboVisual_SelectedValueChanged(object? sender, EventArgs e)
         {
-            AppConfig.Set("visual", (int)comboVisual.SelectedValue);
-            AppConfig.Set("color_temp", (int)comboColorTemp.SelectedValue);
             VisualControl.SetVisual((SplendidCommand)comboVisual.SelectedValue, (int)comboColorTemp.SelectedValue);
         }
 
@@ -1231,6 +1228,7 @@ namespace GHelper
             else if (miniled2 >= 0)
             {
                 buttonMiniled.Enabled = !hdr;
+                if (hdr) miniled2 = 1; // Show HDR as Multizone Strong
 
                 switch (miniled2)
                 {
@@ -1248,9 +1246,9 @@ namespace GHelper
                         break;
                     // Multizone Off
                     case 2:
-                        buttonMiniled.Text = hdr ? Properties.Strings.Multizone : Properties.Strings.OneZone;
+                        buttonMiniled.Text = Properties.Strings.OneZone;
                         buttonMiniled.BorderColor = colorStandard;
-                        buttonMiniled.Activated = hdr;
+                        buttonMiniled.Activated = false;
                         break;
                 }
             }
