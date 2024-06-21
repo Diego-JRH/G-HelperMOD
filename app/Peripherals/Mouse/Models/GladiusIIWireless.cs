@@ -1,13 +1,8 @@
 ﻿namespace GHelper.Peripherals.Mouse.Models
 {
-    //P504
-    public class GladiusIIOrigin : AsusMouse
+    public class GladiusIIWireless : AsusMouse
     {
-        public GladiusIIOrigin() : base(0x0B05, 0x1877, "mi_02", false)
-        {
-        }
-
-        public GladiusIIOrigin(ushort productId, string path) : base(0x0B05, productId, path, false)
+        public GladiusIIWireless() : base(0x0B05, 0x18A0, "mi_02", true)
         {
         }
 
@@ -18,7 +13,7 @@
 
         public override string GetDisplayName()
         {
-            return "Gladius II Origin";
+            return "Gladius II Wireless";
         }
 
 
@@ -38,7 +33,7 @@
         }
         public override int MaxDPI()
         {
-            return 12_000;
+            return 16_000;
         }
 
         public override bool HasRGB()
@@ -48,7 +43,7 @@
 
         public override bool HasAutoPowerOff()
         {
-            return false;
+            return true;
         }
 
         public override bool HasAngleSnapping()
@@ -58,7 +53,7 @@
 
         public override bool HasAngleTuning()
         {
-            return false;
+            return true;
         }
 
         public override bool HasDebounceSetting()
@@ -67,17 +62,22 @@
         }
         public override bool HasLiftOffSetting()
         {
-            return true;
+            return false;
         }
 
         public override bool HasLowBatteryWarning()
         {
-            return false;
+            return true;
+        }
+
+        public override int LowBatteryWarningStep()
+        {
+            return 25;
         }
 
         public override bool HasBattery()
         {
-            return false;
+            return true;
         }
 
         public override bool HasDPIColors()
@@ -90,14 +90,13 @@
             return lightingMode == LightingMode.Static
                 || lightingMode == LightingMode.Breathing
                 || lightingMode == LightingMode.ColorCycle
-                || lightingMode == LightingMode.Rainbow
                 || lightingMode == LightingMode.React
-                || lightingMode == LightingMode.Comet;
+                || lightingMode == LightingMode.BatteryState;
         }
 
         public override LightingZone[] SupportedLightingZones()
         {
-            return new LightingZone[] { LightingZone.Logo, LightingZone.Scrollwheel, LightingZone.Underglow };
+            return new LightingZone[] { LightingZone.Logo, LightingZone.Scrollwheel };
         }
 
         public override int DPIIncrements()
@@ -113,6 +112,17 @@
         public override int MaxBrightness()
         {
             return 4;
+        }
+
+        //Has 25% increments
+        protected override int ParseBattery(byte[] packet)
+        {
+            if (packet[1] == 0x12 && packet[2] == 0x07)
+            {
+                return packet[5] * 25;
+            }
+
+            return -1;
         }
 
         protected override byte[] GetUpdateLightingModePacket(LightingSetting lightingSetting, LightingZone zone)
@@ -153,6 +163,7 @@
 
             return base.GetUpdateLightingModePacket(lightingSetting, zone);
         }
+
 
         protected override byte[] GetReadLightingModePacket(LightingZone zone)
         {
@@ -280,183 +291,4 @@
         }
     }
 
-    //P502
-    public class GladiusII : GladiusIIOrigin
-    {
-        public GladiusII() : base(0x1845, "mi_02")
-        {
-
-        }
-        public override string GetDisplayName()
-        {
-            return "Gladius II Origin";
-        }
-
-        public override int ProfileCount()
-        {
-            return 3;
-        }
-    }
-
-    //P504
-    public class GladiusIIOriginPink : GladiusIIOrigin
-    {
-        public GladiusIIOriginPink() : base(0x18CD, "mi_02")
-        {
-
-        }
-        public override string GetDisplayName()
-        {
-            return "Gladius II PNK LTD";
-        }
-        public override int ProfileCount()
-        {
-            return 3;
-        }
-
-        public override LightingZone[] SupportedLightingZones()
-        {
-            return new LightingZone[] { LightingZone.Scrollwheel, LightingZone.Underglow };
-        }
-
-        protected override byte[] GetUpdateLightingModePacket(LightingSetting lightingSetting, LightingZone zone)
-        {
-            /*
-             * This mouse uses different speed values for rainbow mode compared to others.
-             * 51 28 03 00 03 04 FF 00 00 00 00 [8C] 00 00 00 00
-             * 51 28 03 00 03 04 FF 00 00 00 00 [64] 00 00 00 00
-             * 51 28 03 00 03 04 FF 00 00 00 00 [3F] 00 00 00 00
-             */
-
-            byte speed = (byte)(SupportsAnimationSpeed(lightingSetting.LightingMode) ? lightingSetting.AnimationSpeed : 0x00);
-
-            if (lightingSetting.LightingMode == LightingMode.Rainbow)
-            {
-                speed = 0x64;
-
-                switch (lightingSetting.AnimationSpeed)
-                {
-                    case AnimationSpeed.Slow:
-                        speed = 0x8C;
-                        break;
-                    case AnimationSpeed.Medium:
-                        speed = 0x64;
-                        break;
-                    case AnimationSpeed.Fast:
-                        speed = 0x3F;
-                        break;
-                }
-            }
-
-
-
-            return new byte[] { reportId, 0x51, 0x28, (byte)zone, 0x00,
-                IndexForLightingMode(lightingSetting.LightingMode),
-                (byte)lightingSetting.Brightness,
-                0x00, // this mouse has 2 colors per LED capability, but we do not suppor this yet, so we disable it
-                lightingSetting.RGBColor.R, lightingSetting.RGBColor.G, lightingSetting.RGBColor.B,
-                0x00, 0x00, 0x00, //this would be the second set of RGB Colors if we ever support this
-                (byte)(SupportsAnimationDirection(lightingSetting.LightingMode) ? lightingSetting.AnimationDirection : 0x00),
-                (byte)((lightingSetting.RandomColor && SupportsRandomColor(lightingSetting.LightingMode)) ? 0x01: 0x00),
-                speed
-            };
-        }
-
-        protected LightingSetting? ParseLightingSetting(byte[] packet, LightingZone zone)
-        {
-            if (packet[1] != 0x12 || packet[2] != 0x03)
-            {
-                return null;
-            }
-
-            //skip first block as it seems to be empty. Maybe only filled to certain configurations.
-            int offset = 5 + 9 + (((int)zone) * 9);
-
-            LightingSetting setting = new LightingSetting();
-
-            setting.LightingMode = LightingModeForIndex(packet[offset + 0]);
-            setting.Brightness = packet[offset + 1];
-            //Offset 2 is a bool that says whether dual color RGB is in use. Unsupported for now by GHelper
-
-            setting.RGBColor = Color.FromArgb(packet[offset + 3], packet[offset + 4], packet[offset + 5]);
-
-            //Offset 7 - 9 are the second RGB colors, unuse as not supported yet
-
-
-            return setting;
-        }
-
-        public override void ReadLightingSetting()
-        {
-            if (!HasRGB())
-            {
-                return;
-            }
-            //Mouse sends all lighting zones in one response                                                         Direction, Random col, Speed
-            //First block seems emtpy?
-            //00 12 03 00 00 [00 00 00 00 00 00 00 00 00] [03 04 01 00 00 00 00 00 00] [03 04 01 00 00 00 00 00 00] [00 01 8c]
-            //Length 9, offset 5
-            //Direction
-            byte[]? response = WriteForResponse(GetReadLightingModePacket(LightingZone.All));
-            if (response is null) return;
-
-            LightingZone[] lz = SupportedLightingZones();
-            for (int i = 0; i < lz.Length; ++i)
-            {
-                LightingSetting? ls = ParseLightingSetting(response, lz[i]);
-                if (ls is null)
-                {
-                    Logger.WriteLine(GetDisplayName() + ": Failed to read RGB Setting for Zone " + lz[i].ToString());
-                    continue;
-                }
-                ls.AnimationDirection = SupportsAnimationDirection(ls.LightingMode)
-                   ? (AnimationDirection)response[32]
-                   : AnimationDirection.Clockwise;
-
-                ls.RandomColor = SupportsRandomColor(ls.LightingMode) && response[33] == 0x01;
-
-                //Rainbow uses different speed values for whatever reason
-                if (response[12] == 0x03)
-                {
-                    byte speed = response[34];
-
-                    switch (speed)
-                    {
-                        case 0x3F:
-                            ls.AnimationSpeed = AnimationSpeed.Fast;
-                            break;
-
-                        case 0x64:
-                            ls.AnimationSpeed = AnimationSpeed.Medium;
-                            break;
-
-                        case 0x8C:
-                            ls.AnimationSpeed = AnimationSpeed.Slow;
-                            break;
-
-                        default:
-                            ls.AnimationSpeed = AnimationSpeed.Medium;
-                            break;
-                    }
-                }
-                else
-                {
-                    ls.AnimationSpeed = SupportsAnimationSpeed(ls.LightingMode)
-                    ? (AnimationSpeed)response[34]
-                    : AnimationSpeed.Medium;
-
-                    if (ls.AnimationSpeed != AnimationSpeed.Fast
-                        && ls.AnimationSpeed != AnimationSpeed.Medium
-                        && ls.AnimationSpeed != AnimationSpeed.Slow)
-                    {
-                        ls.AnimationSpeed = AnimationSpeed.Medium;
-                    }
-                }
-
-
-                Logger.WriteLine(GetDisplayName() + ": Read RGB Setting for Zone " + lz[i].ToString() + ": " + ls.ToString());
-                LightingSetting[i] = ls;
-            }
-        }
-    }
 }

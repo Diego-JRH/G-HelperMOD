@@ -8,12 +8,23 @@ Works with all popular models, such as ROG Zephyrus G14, G15, G16, M16, Flow X13
 
 # [:floppy_disk:Download](https://github.com/seerge/g-helper/releases/latest/download/GHelper.zip)
 
+<table>
+<tr>
+   <td><b>Support Project</b></td>
+   <td >
+      <a href="https://bit.ly/4c0ZWs9"><img src="https://raw.githubusercontent.com/seerge/g-helper/main/docs/paypal-eur.png" height="36" alt="PayPal EUR"></a>&nbsp;
+      <a href="https://bit.ly/4aGTyW8"><img src="https://raw.githubusercontent.com/seerge/g-helper/main/docs/paypal-usd.png" height="36" alt="PayPal USD"></a>&nbsp;
+      <a href="https://buy.stripe.com/bIY4hl8HbalH3G8bIJ"><img src="https://raw.githubusercontent.com/seerge/g-helper/main/docs/stripe.png" height="36" alt="Stripe"></a>&nbsp;
+      <a href="https://buy.stripe.com/bIY4hl8HbalH3G8bIJ"><img src="https://raw.githubusercontent.com/seerge/g-helper/main/docs/alipay.png" height="36" alt="Alipay"></a>
+   </td>
+</tr>
+</table>
+
 - [FAQ](https://github.com/seerge/g-helper/wiki/FAQ)
 - [Setup and Requirements](https://github.com/seerge/g-helper/wiki/Requirements)
 - [Troubleshooting](https://github.com/seerge/g-helper/wiki/Troubleshooting)
 - [Power User Settings](https://github.com/seerge/g-helper/wiki/Power-user-settings)
 
-### Support project : [:euro: Paypal EUR](https://www.paypal.com/donate/?hosted_button_id=4HMSHS4EBQWTA) | [💵 Paypal USD](https://www.paypal.com/donate/?hosted_button_id=SRM6QUX6ACXDY)
 
 [![G-Helper Download](https://github.com/seerge/g-helper/assets/5920850/4d98465a-63a5-4498-ae14-afb3e67e7e82)](https://github.com/seerge/g-helper/releases/latest/download/GHelper.zip)
 
@@ -23,8 +34,8 @@ Works with all popular models, such as ROG Zephyrus G14, G15, G16, M16, Flow X13
 | [Josh Cravey](https://www.youtube.com/watch?v=hqe-PjuE-K8) | [cbutters Tech](https://www.youtube.com/watch?v=6aVdwJKZSSc) | 
 
 ## 📰 Articles
-1. https://binaryfork.com/ghelper-armoury-crate-alternative-10216/
-2. https://www.digitaltrends.com/computing/g-helper-armoury-crate-alternative/
+1. https://www.digitaltrends.com/computing/g-helper-armoury-crate-alternative/
+2. https://binaryfork.com/ghelper-armoury-crate-alternative-10216/
 
 ## :gift: Advantages 
 
@@ -44,7 +55,7 @@ Works with all popular models, such as ROG Zephyrus G14, G15, G16, M16, Flow X13
 4. Custom fan curve editor, power limits and turbo boost selection for every performance mode
 5. Anime Matrix or Slash Lighting control including animated GIFs, clock and Audio visualizer
 6. Backlight animation modes and colors 
-7. Custom hotkeys (M-keys, FN+X keys)
+7. Hotkey handling
 8. Monitor CPU and GPU temperature, fan speeds and battery status
 9. Battery charge limit to preserve battery health
 10. NVidia GPU overclocking and undervolting
@@ -95,6 +106,7 @@ Each BIOS mode is paired with matching Windows Power Mode. You can adjust this s
 - ROG Gladius III
 - ROG Gladius III Wireless
 - ROG Harpe Ace Aim Lab Edition
+- ROG Keris (P509)
 - ROG Keris Wireless
 - ROG Strix Carry (P508)
 - ROG Strix III Gladius III Aimpoint Wireless (P711)
@@ -136,13 +148,6 @@ Huge thanks to [@IceStormNG](https://github.com/IceStormNG) 👑 for contributio
 - ``M + Y`` - Toggle AMD overay
 - ``M + X`` - Screenshot
 - ``M + Right Stick Click`` - Controller Mode
-
-------------------
-#### If you like the app you can make a Donation 
-
-| [Paypal in EUR](https://www.paypal.com/donate/?hosted_button_id=4HMSHS4EBQWTA) | [Paypal in USD](https://www.paypal.com/donate/?hosted_button_id=SRM6QUX6ACXDY) |
-| ------------------------------------------ | ----------------------------------------------- |
-| [![QR Code](https://user-images.githubusercontent.com/5920850/233658717-0441494d-fede-4a2c-b4f2-4b16a184a69a.png)](https://www.paypal.com/donate/?hosted_button_id=4HMSHS4EBQWTA) | [![QR Code](https://github-production-user-asset-6210df.s3.amazonaws.com/5920850/239492811-b487e89a-3df6-42ea-bdb8-24c455ab2310.png)](https://www.paypal.com/donate/?hosted_button_id=SRM6QUX6ACXDY) |
 
 ------------------
 

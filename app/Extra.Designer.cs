@@ -117,6 +117,7 @@ namespace GHelper
             checkGpuApps = new CheckBox();
             checkGPUFix = new CheckBox();
             checkStatusLed = new CheckBox();
+            checkPerKeyRGB = new CheckBox();
             panelPower = new Panel();
             numericHibernateAfter = new NumericUpDown();
             labelHibernateAfter = new Label();
@@ -138,6 +139,10 @@ namespace GHelper
             buttonACPISend = new RButton();
             pictureDebug = new PictureBox();
             labelACPITitle = new Label();
+            checkBatteryBar = new CheckBox();
+            checkBatteryLid = new CheckBox();
+            checkBattery = new CheckBox();
+            checkBatteryLogo = new CheckBox();
             panelServices.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureService).BeginInit();
             panelBindingsHeader.SuspendLayout();
@@ -176,7 +181,7 @@ namespace GHelper
             panelServices.Controls.Add(labelServices);
             panelServices.Controls.Add(buttonServices);
             panelServices.Dock = DockStyle.Top;
-            panelServices.Location = new Point(15, 1638);
+            panelServices.Location = new Point(15, 1723);
             panelServices.Name = "panelServices";
             panelServices.Size = new Size(949, 75);
             panelServices.TabIndex = 5;
@@ -681,7 +686,7 @@ namespace GHelper
             panelBacklight.Location = new Point(15, 514);
             panelBacklight.Name = "panelBacklight";
             panelBacklight.Padding = new Padding(0, 5, 0, 5);
-            panelBacklight.Size = new Size(949, 402);
+            panelBacklight.Size = new Size(949, 445);
             panelBacklight.TabIndex = 2;
             // 
             // panelBacklightExtra
@@ -694,7 +699,7 @@ namespace GHelper
             panelBacklightExtra.Controls.Add(labelSpeed);
             panelBacklightExtra.Controls.Add(comboKeyboardSpeed);
             panelBacklightExtra.Dock = DockStyle.Top;
-            panelBacklightExtra.Location = new Point(0, 282);
+            panelBacklightExtra.Location = new Point(0, 325);
             panelBacklightExtra.Margin = new Padding(4, 3, 4, 3);
             panelBacklightExtra.Name = "panelBacklightExtra";
             panelBacklightExtra.Padding = new Padding(0, 0, 0, 5);
@@ -760,7 +765,7 @@ namespace GHelper
             // 
             panelXMG.Controls.Add(checkXMG);
             panelXMG.Dock = DockStyle.Top;
-            panelXMG.Location = new Point(0, 222);
+            panelXMG.Location = new Point(0, 265);
             panelXMG.Margin = new Padding(4, 3, 4, 3);
             panelXMG.Name = "panelXMG";
             panelXMG.Size = new Size(949, 60);
@@ -786,6 +791,10 @@ namespace GHelper
             tableBacklight.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
             tableBacklight.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
             tableBacklight.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            tableBacklight.Controls.Add(checkBatteryLogo, 0, 5);
+            tableBacklight.Controls.Add(checkBattery, 0, 5);
+            tableBacklight.Controls.Add(checkBatteryLid, 0, 5);
+            tableBacklight.Controls.Add(checkBatteryBar, 0, 5);
             tableBacklight.Controls.Add(labelBacklightKeyboard, 0, 0);
             tableBacklight.Controls.Add(checkAwake, 0, 1);
             tableBacklight.Controls.Add(checkBoot, 0, 2);
@@ -810,13 +819,14 @@ namespace GHelper
             tableBacklight.Location = new Point(0, 5);
             tableBacklight.Margin = new Padding(0);
             tableBacklight.Name = "tableBacklight";
-            tableBacklight.RowCount = 5;
+            tableBacklight.RowCount = 6;
             tableBacklight.RowStyles.Add(new RowStyle());
             tableBacklight.RowStyles.Add(new RowStyle());
             tableBacklight.RowStyles.Add(new RowStyle());
             tableBacklight.RowStyles.Add(new RowStyle());
             tableBacklight.RowStyles.Add(new RowStyle());
-            tableBacklight.Size = new Size(949, 217);
+            tableBacklight.RowStyles.Add(new RowStyle());
+            tableBacklight.Size = new Size(949, 260);
             tableBacklight.TabIndex = 44;
             // 
             // labelBacklightKeyboard
@@ -1068,7 +1078,7 @@ namespace GHelper
             panelSettingsHeader.Controls.Add(pictureSettings);
             panelSettingsHeader.Controls.Add(labelSettings);
             panelSettingsHeader.Dock = DockStyle.Top;
-            panelSettingsHeader.Location = new Point(15, 916);
+            panelSettingsHeader.Location = new Point(15, 959);
             panelSettingsHeader.Name = "panelSettingsHeader";
             panelSettingsHeader.Padding = new Padding(11, 5, 11, 5);
             panelSettingsHeader.Size = new Size(949, 51);
@@ -1136,18 +1146,19 @@ namespace GHelper
             panelSettings.Controls.Add(checkGpuApps);
             panelSettings.Controls.Add(checkGPUFix);
             panelSettings.Controls.Add(checkStatusLed);
+            panelSettings.Controls.Add(checkPerKeyRGB);
             panelSettings.Dock = DockStyle.Top;
-            panelSettings.Location = new Point(15, 1154);
+            panelSettings.Location = new Point(15, 1197);
             panelSettings.Name = "panelSettings";
             panelSettings.Padding = new Padding(20, 5, 11, 5);
-            panelSettings.Size = new Size(949, 430);
+            panelSettings.Size = new Size(949, 472);
             panelSettings.TabIndex = 3;
             // 
             // checkAutoToggleClamshellMode
             // 
             checkAutoToggleClamshellMode.AutoSize = true;
             checkAutoToggleClamshellMode.Dock = DockStyle.Top;
-            checkAutoToggleClamshellMode.Location = new Point(20, 383);
+            checkAutoToggleClamshellMode.Location = new Point(20, 425);
             checkAutoToggleClamshellMode.Name = "checkAutoToggleClamshellMode";
             checkAutoToggleClamshellMode.Padding = new Padding(3);
             checkAutoToggleClamshellMode.Size = new Size(918, 42);
@@ -1159,7 +1170,7 @@ namespace GHelper
             // 
             checkBWIcon.AutoSize = true;
             checkBWIcon.Dock = DockStyle.Top;
-            checkBWIcon.Location = new Point(20, 341);
+            checkBWIcon.Location = new Point(20, 383);
             checkBWIcon.Margin = new Padding(4, 3, 4, 3);
             checkBWIcon.Name = "checkBWIcon";
             checkBWIcon.Padding = new Padding(3);
@@ -1172,7 +1183,7 @@ namespace GHelper
             // 
             checkTopmost.AutoSize = true;
             checkTopmost.Dock = DockStyle.Top;
-            checkTopmost.Location = new Point(20, 299);
+            checkTopmost.Location = new Point(20, 341);
             checkTopmost.Margin = new Padding(4, 3, 4, 3);
             checkTopmost.Name = "checkTopmost";
             checkTopmost.Padding = new Padding(3);
@@ -1185,7 +1196,7 @@ namespace GHelper
             // 
             checkNoOverdrive.AutoSize = true;
             checkNoOverdrive.Dock = DockStyle.Top;
-            checkNoOverdrive.Location = new Point(20, 257);
+            checkNoOverdrive.Location = new Point(20, 299);
             checkNoOverdrive.Margin = new Padding(4, 3, 4, 3);
             checkNoOverdrive.Name = "checkNoOverdrive";
             checkNoOverdrive.Padding = new Padding(3);
@@ -1198,7 +1209,7 @@ namespace GHelper
             // 
             checkBootSound.AutoSize = true;
             checkBootSound.Dock = DockStyle.Top;
-            checkBootSound.Location = new Point(20, 215);
+            checkBootSound.Location = new Point(20, 257);
             checkBootSound.Margin = new Padding(4, 3, 4, 3);
             checkBootSound.Name = "checkBootSound";
             checkBootSound.Padding = new Padding(3);
@@ -1211,7 +1222,7 @@ namespace GHelper
             // 
             checkUSBC.AutoSize = true;
             checkUSBC.Dock = DockStyle.Top;
-            checkUSBC.Location = new Point(20, 173);
+            checkUSBC.Location = new Point(20, 215);
             checkUSBC.Margin = new Padding(4, 3, 4, 3);
             checkUSBC.Name = "checkUSBC";
             checkUSBC.Padding = new Padding(3);
@@ -1224,7 +1235,7 @@ namespace GHelper
             // 
             checkVariBright.AutoSize = true;
             checkVariBright.Dock = DockStyle.Top;
-            checkVariBright.Location = new Point(20, 131);
+            checkVariBright.Location = new Point(20, 173);
             checkVariBright.Margin = new Padding(4, 3, 4, 3);
             checkVariBright.Name = "checkVariBright";
             checkVariBright.Padding = new Padding(3);
@@ -1237,7 +1248,7 @@ namespace GHelper
             // 
             checkGpuApps.AutoSize = true;
             checkGpuApps.Dock = DockStyle.Top;
-            checkGpuApps.Location = new Point(20, 89);
+            checkGpuApps.Location = new Point(20, 131);
             checkGpuApps.Margin = new Padding(4, 3, 4, 3);
             checkGpuApps.Name = "checkGpuApps";
             checkGpuApps.Padding = new Padding(3);
@@ -1250,7 +1261,7 @@ namespace GHelper
             // 
             checkGPUFix.AutoSize = true;
             checkGPUFix.Dock = DockStyle.Top;
-            checkGPUFix.Location = new Point(20, 47);
+            checkGPUFix.Location = new Point(20, 89);
             checkGPUFix.Margin = new Padding(4, 3, 4, 3);
             checkGPUFix.Name = "checkGPUFix";
             checkGPUFix.Padding = new Padding(3);
@@ -1263,7 +1274,7 @@ namespace GHelper
             // 
             checkStatusLed.AutoSize = true;
             checkStatusLed.Dock = DockStyle.Top;
-            checkStatusLed.Location = new Point(20, 5);
+            checkStatusLed.Location = new Point(20, 47);
             checkStatusLed.Margin = new Padding(4, 3, 4, 3);
             checkStatusLed.Name = "checkStatusLed";
             checkStatusLed.Padding = new Padding(3);
@@ -1273,13 +1284,27 @@ namespace GHelper
             checkStatusLed.UseVisualStyleBackColor = true;
             checkStatusLed.Visible = false;
             // 
+            // checkPerKeyRGB
+            // 
+            checkPerKeyRGB.AutoSize = true;
+            checkPerKeyRGB.Dock = DockStyle.Top;
+            checkPerKeyRGB.Location = new Point(20, 5);
+            checkPerKeyRGB.Margin = new Padding(4, 3, 4, 3);
+            checkPerKeyRGB.Name = "checkPerKeyRGB";
+            checkPerKeyRGB.Padding = new Padding(3);
+            checkPerKeyRGB.Size = new Size(918, 42);
+            checkPerKeyRGB.TabIndex = 13;
+            checkPerKeyRGB.Text = "Per-Key RGB Keyboard";
+            checkPerKeyRGB.UseVisualStyleBackColor = true;
+            checkPerKeyRGB.Visible = false;
+            // 
             // panelPower
             // 
             panelPower.Controls.Add(numericHibernateAfter);
             panelPower.Controls.Add(labelHibernateAfter);
             panelPower.Controls.Add(pictureHibernate);
             panelPower.Dock = DockStyle.Top;
-            panelPower.Location = new Point(15, 1584);
+            panelPower.Location = new Point(15, 1669);
             panelPower.Name = "panelPower";
             panelPower.Size = new Size(949, 54);
             panelPower.TabIndex = 4;
@@ -1322,7 +1347,7 @@ namespace GHelper
             panelAPU.Controls.Add(pictureAPUMem);
             panelAPU.Controls.Add(labelAPUMem);
             panelAPU.Dock = DockStyle.Top;
-            panelAPU.Location = new Point(15, 1097);
+            panelAPU.Location = new Point(15, 1140);
             panelAPU.Name = "panelAPU";
             panelAPU.Padding = new Padding(11, 5, 11, 0);
             panelAPU.Size = new Size(949, 57);
@@ -1376,7 +1401,7 @@ namespace GHelper
             panelCores.Controls.Add(pictureCores);
             panelCores.Controls.Add(label1);
             panelCores.Dock = DockStyle.Top;
-            panelCores.Location = new Point(15, 1036);
+            panelCores.Location = new Point(15, 1079);
             panelCores.Name = "panelCores";
             panelCores.Padding = new Padding(11, 5, 11, 0);
             panelCores.Size = new Size(949, 61);
@@ -1461,7 +1486,7 @@ namespace GHelper
             panelACPI.Controls.Add(pictureDebug);
             panelACPI.Controls.Add(labelACPITitle);
             panelACPI.Dock = DockStyle.Top;
-            panelACPI.Location = new Point(15, 967);
+            panelACPI.Location = new Point(15, 1010);
             panelACPI.Name = "panelACPI";
             panelACPI.Padding = new Padding(11, 5, 11, 0);
             panelACPI.Size = new Size(949, 69);
@@ -1524,6 +1549,54 @@ namespace GHelper
             labelACPITitle.Size = new Size(188, 32);
             labelACPITitle.TabIndex = 0;
             labelACPITitle.Text = "ACPI DEVS Test";
+            // 
+            // checkBatteryBar
+            // 
+            checkBatteryBar.Dock = DockStyle.Fill;
+            checkBatteryBar.Location = new Point(478, 217);
+            checkBatteryBar.Margin = new Padding(4, 0, 4, 0);
+            checkBatteryBar.Name = "checkBatteryBar";
+            checkBatteryBar.Padding = new Padding(16, 3, 7, 3);
+            checkBatteryBar.Size = new Size(229, 43);
+            checkBatteryBar.TabIndex = 22;
+            checkBatteryBar.Text = "Battery";
+            checkBatteryBar.UseVisualStyleBackColor = true;
+            // 
+            // checkBatteryLid
+            // 
+            checkBatteryLid.Dock = DockStyle.Fill;
+            checkBatteryLid.Location = new Point(715, 217);
+            checkBatteryLid.Margin = new Padding(4, 0, 4, 0);
+            checkBatteryLid.Name = "checkBatteryLid";
+            checkBatteryLid.Padding = new Padding(16, 3, 7, 3);
+            checkBatteryLid.Size = new Size(230, 43);
+            checkBatteryLid.TabIndex = 23;
+            checkBatteryLid.Text = "Battery";
+            checkBatteryLid.UseVisualStyleBackColor = true;
+            // 
+            // checkBattery
+            // 
+            checkBattery.Dock = DockStyle.Fill;
+            checkBattery.Location = new Point(4, 217);
+            checkBattery.Margin = new Padding(4, 0, 4, 0);
+            checkBattery.Name = "checkBattery";
+            checkBattery.Padding = new Padding(16, 3, 7, 3);
+            checkBattery.Size = new Size(229, 43);
+            checkBattery.TabIndex = 24;
+            checkBattery.Text = "Battery";
+            checkBattery.UseVisualStyleBackColor = true;
+            // 
+            // checkBatteryLogo
+            // 
+            checkBatteryLogo.Dock = DockStyle.Fill;
+            checkBatteryLogo.Location = new Point(241, 217);
+            checkBatteryLogo.Margin = new Padding(4, 0, 4, 0);
+            checkBatteryLogo.Name = "checkBatteryLogo";
+            checkBatteryLogo.Padding = new Padding(16, 3, 7, 3);
+            checkBatteryLogo.Size = new Size(229, 43);
+            checkBatteryLogo.TabIndex = 25;
+            checkBatteryLogo.Text = "Battery";
+            checkBatteryLogo.UseVisualStyleBackColor = true;
             // 
             // Extra
             // 
@@ -1709,5 +1782,10 @@ namespace GHelper
         private Label labelACPITitle;
         private CheckBox checkBWIcon;
         private CheckBox checkStatusLed;
+        private CheckBox checkPerKeyRGB;
+        private CheckBox checkBatteryLogo;
+        private CheckBox checkBattery;
+        private CheckBox checkBatteryLid;
+        private CheckBox checkBatteryBar;
     }
 }

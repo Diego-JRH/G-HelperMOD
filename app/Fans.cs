@@ -428,6 +428,7 @@ namespace GHelper
 
             labelUV.Text = trackUV.Value.ToString();
             labelUViGPU.Text = trackUViGPU.Value.ToString();
+
             labelTemp.Text = (trackTemp.Value < RyzenControl.MaxTemp) ? trackTemp.Value.ToString() + "°C" : "Default";
         }
 
@@ -1142,7 +1143,7 @@ namespace GHelper
             trackTemp.Value = RyzenControl.MaxTemp;
 
             AdvancedScroll();
-            AppConfig.SetMode("cpu_temp", -1);
+            AppConfig.RemoveMode("cpu_temp");
 
             modeControl.ResetPerformanceMode();
 
@@ -1160,8 +1161,11 @@ namespace GHelper
                 trackGPUBoost.Value = AsusACPI.MaxGPUBoost;
                 trackGPUTemp.Value = AsusACPI.MaxGPUTemp;
 
-                AppConfig.SetMode("gpu_boost", trackGPUBoost.Value);
-                AppConfig.SetMode("gpu_temp", trackGPUTemp.Value);
+                //AppConfig.SetMode("gpu_boost", trackGPUBoost.Value);
+                //AppConfig.SetMode("gpu_temp", trackGPUTemp.Value);
+                
+                AppConfig.RemoveMode("gpu_boost");
+                AppConfig.RemoveMode("gpu_temp");
 
                 AppConfig.RemoveMode("gpu_power");
                 AppConfig.RemoveMode("gpu_clock_limit");

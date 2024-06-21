@@ -109,7 +109,8 @@ public static class AppConfig
                         break;
                     }
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Logger.WriteLine(ex.Message);
             }
@@ -193,6 +194,11 @@ public static class AppConfig
     public static bool IsNotFalse(string name)
     {
         return Get(name) != 0;
+    }
+
+    public static bool IsOnBattery(string zone)
+    {
+        return Get(zone + "_bat", Get(zone)) != 0;
     }
 
     public static string GetString(string name, string empty = null)
@@ -337,7 +343,7 @@ public static class AppConfig
 
     public static bool IsAlly()
     {
-        return ContainsModel("RC71");
+        return ContainsModel("RC71") || ContainsModel("RC72");
     }
 
     public static bool NoMKeys()
@@ -429,16 +435,25 @@ public static class AppConfig
         return ContainsModel("Strix") || ContainsModel("Scar") || ContainsModel("G703G");
     }
 
+    public static bool IsAdvancedRGB()
+    {
+        return IsStrix() || ContainsModel("GX650");
+    }
+
     public static bool IsStrixLimitedRGB()
     {
         return ContainsModel("G512LI") || ContainsModel("G513R") || ContainsModel("G713PV") || ContainsModel("G513IE") || ContainsModel("G713RC") || ContainsModel("G513QM") || ContainsModel("G531G");
     }
 
-    public static bool Is4ZoneRGB()
+    public static bool IsPossible4ZoneRGB()
     {
-        return (ContainsModel("G614JI_") || ContainsModel("G614JV_") || ContainsModel("G614JZ") || IsStrixLimitedRGB()) && !Is("per_key_rgb");
+        return ContainsModel("G614JI_") || ContainsModel("G614JV_") || ContainsModel("G614JZ") || IsStrixLimitedRGB();
     }
 
+    public static bool Is4ZoneRGB()
+    {
+        return IsPossible4ZoneRGB() && !Is("per_key_rgb");
+    }
 
     public static bool IsNoAirplaneMode()
     {
@@ -625,6 +640,16 @@ public static class AppConfig
         return IsAlly() || Is("stop_ac");
     }
 
+    public static bool IsChargeLimit6080()
+    {
+        return ContainsModel("GA403U") || ContainsModel("GU605") || ContainsModel("GA503R") || (IsTUF() && !(ContainsModel("FX507Z") || ContainsModel("FA617")));
 
+    }
+
+    // 2024 Models support Dynamic Lighting
+    public static bool IsDynamicLighting()
+    {
+        return IsSlash() || ContainsModel("JIR") || ContainsModel("JZR") || ContainsModel("JVR") || ContainsModel("JYR") || ContainsModel("FA607P") || ContainsModel("FX607J") || ContainsModel("FA507U");
+    }
 
 }
