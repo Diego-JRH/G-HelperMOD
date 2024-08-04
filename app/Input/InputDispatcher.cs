@@ -218,6 +218,9 @@ namespace GHelper.Input
                 case 3:
                     KeyboardHook.KeyKeyKeyPress((Keys)hexKeys[0], (Keys)hexKeys[1], (Keys)hexKeys[2]);
                     break;
+                case 4:
+                    KeyboardHook.KeyKeyKeyKeyPress((Keys)hexKeys[0], (Keys)hexKeys[1], (Keys)hexKeys[2], (Keys)hexKeys[3]);
+                    break;
                 default:
                     LaunchProcess(command);
                     break;
@@ -288,7 +291,7 @@ namespace GHelper.Input
                     }
                 }
 
-                if (AppConfig.NoAura())
+                if (AppConfig.MediaKeys())
                 {
                     switch (e.Key)
                     {
@@ -949,7 +952,10 @@ namespace GHelper.Input
             if (string.IsNullOrEmpty(command)) return;
             try
             {
-                RestrictedProcessHelper.RunAsRestrictedUser(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "cmd.exe"), "/C " + command);
+                if (command.StartsWith("shutdown"))
+                    ProcessHelper.RunCMD("cmd", "/C " + command);
+                else
+                    RestrictedProcessHelper.RunAsRestrictedUser(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "cmd.exe"), "/C " + command);
             }
             catch (Exception ex)
             {

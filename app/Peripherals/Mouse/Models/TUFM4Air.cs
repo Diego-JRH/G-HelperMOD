@@ -30,7 +30,7 @@
 
         public override int ProfileCount()
         {
-            return 1;
+            return 3;
         }
         public override int MaxDPI()
         {
@@ -38,11 +38,6 @@
         }
 
         public override bool HasLiftOffSetting()
-        {
-            return true;
-        }
-
-        public override bool HasDebounceSetting()
         {
             return true;
         }
@@ -62,19 +57,9 @@
             return false;
         }
 
-        public override bool HasDPIColors()
-        {
-            return false;
-        }
-
         public override int DPIIncrements()
         {
             return 100;
-        }
-
-        public override bool CanChangeDPIProfile()
-        {
-            return true;
         }
     }
 

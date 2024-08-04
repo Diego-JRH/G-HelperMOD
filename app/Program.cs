@@ -208,16 +208,17 @@ namespace GHelper
 
 
 
-        public static void SetAutoModes(bool powerChanged = false, bool init = false)
+        public static bool SetAutoModes(bool powerChanged = false, bool init = false)
         {
 
-            if (Math.Abs(DateTimeOffset.Now.ToUnixTimeMilliseconds() - lastAuto) < 3000) return;
+            if (Math.Abs(DateTimeOffset.Now.ToUnixTimeMilliseconds() - lastAuto) < 3000) return false;
             lastAuto = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
             isPlugged = SystemInformation.PowerStatus.PowerLineStatus;
             Logger.WriteLine("AutoSetting for " + isPlugged.ToString());
 
             BatteryControl.AutoBattery(init);
+            if (init) screenControl.InitMiniled();
 
             inputDispatcher.Init();
 
@@ -240,6 +241,8 @@ namespace GHelper
             {
                 settingsForm.AutoKeyboard();
             }
+
+            return true;
         }
 
         private static void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)

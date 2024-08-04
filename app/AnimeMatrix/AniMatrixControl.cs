@@ -40,9 +40,16 @@ namespace GHelper.AnimeMatrix
             try
             {
                 if (AppConfig.IsSlash())
-                    deviceSlash = new SlashDevice();
+                {
+                    if (AppConfig.IsSlashAura())
+                        deviceSlash = new SlashDeviceAura();
+                    else
+                        deviceSlash = new SlashDevice();
+                }
                 else
+                {
                     deviceMatrix = new AnimeMatrixDevice();
+                }
 
                 matrixTimer = new System.Timers.Timer(100);
                 matrixTimer.Elapsed += MatrixTimer_Elapsed;
@@ -103,7 +110,7 @@ namespace GHelper.AnimeMatrix
 
                     deviceSlash.SetEnabled(true);
                     deviceSlash.Init();
-                    
+
                     switch ((SlashMode)running)
                     {
                         case SlashMode.Static:
@@ -111,7 +118,8 @@ namespace GHelper.AnimeMatrix
                             if (custom is not null && custom.Length > 0)
                             {
                                 deviceSlash.SetCustom(AppConfig.StringToBytes(custom));
-                            } else
+                            }
+                            else
                             {
                                 deviceSlash.SetStatic(brightness);
                             }
@@ -137,10 +145,10 @@ namespace GHelper.AnimeMatrix
         public void SetLidMode(bool force = false)
         {
             bool matrixLid = AppConfig.Is("matrix_lid");
-            
+
             if (deviceSlash is not null)
             {
-                deviceSlash.SetLidMode(matrixLid);
+                deviceSlash.SetLidMode(true);
             }
 
             if (matrixLid || force)
@@ -226,9 +234,9 @@ namespace GHelper.AnimeMatrix
         {
             BuiltInAnimation animation = new BuiltInAnimation(
                 (BuiltInAnimation.Running)running,
-                BuiltInAnimation.Sleeping.Starfield,
-                BuiltInAnimation.Shutdown.SeeYa,
-                BuiltInAnimation.Startup.StaticEmergence
+                (BuiltInAnimation.Sleeping)AppConfig.Get("matrix_sleep", (int)BuiltInAnimation.Sleeping.Starfield),
+                (BuiltInAnimation.Shutdown)AppConfig.Get("matrix_shutdown", (int)BuiltInAnimation.Shutdown.SeeYa),
+                (BuiltInAnimation.Startup)AppConfig.Get("matrix_startup", (int)BuiltInAnimation.Startup.StaticEmergence)
             );
             deviceMatrix.SetBuiltInAnimation(true, animation);
             Logger.WriteLine("Matrix builtin: " + animation.AsByte);
@@ -268,8 +276,8 @@ namespace GHelper.AnimeMatrix
             StartMatrixTimer(1000);
             Logger.WriteLine("Matrix Clock");
         }
-        
-        
+
+
         private void SlashTimer_start(int interval = 60000)
         {
             // 100% to 0% in 1hr = 1% every 36 seconds
@@ -279,18 +287,18 @@ namespace GHelper.AnimeMatrix
 
             // create the timer if first call
             // this way, the timer only spawns if user tries to use battery pattern
-            if(slashTimer == default(System.Timers.Timer))
+            if (slashTimer == default(System.Timers.Timer))
             {
                 slashTimer = new System.Timers.Timer(interval);
                 slashTimer.Elapsed += SlashTimer_elapsed;
                 slashTimer.AutoReset = true;
             }
             // only write if interval changed
-            if(slashTimer.Interval != interval)
+            if (slashTimer.Interval != interval)
             {
                 slashTimer.Interval = interval;
             }
-            
+
             slashTimer.Start();
         }
 
@@ -304,7 +312,7 @@ namespace GHelper.AnimeMatrix
             if (deviceSlash is null) return;
 
             //kill timer if called but not in battery pattern mode
-            if((SlashMode)AppConfig.Get("matrix_running", 0) != SlashMode.BatteryLevel)
+            if ((SlashMode)AppConfig.Get("matrix_running", 0) != SlashMode.BatteryLevel)
             {
                 slashTimer.Stop();
                 slashTimer.Dispose();

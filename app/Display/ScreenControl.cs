@@ -60,6 +60,13 @@ namespace GHelper.Display
                 }
             }
 
+            SetMiniled(miniled);
+
+            InitScreen();
+        }
+
+        public void SetMiniled(int miniled = -1)
+        {
             if (miniled >= 0)
             {
                 if (Program.acpi.DeviceGet(AsusACPI.ScreenMiniled1) >= 0)
@@ -70,8 +77,12 @@ namespace GHelper.Display
                     Thread.Sleep(100);
                 }
             }
+        }
 
-            InitScreen();
+        public void InitMiniled()
+        {
+            if (AppConfig.IsForceMiniled())
+                SetMiniled(AppConfig.Get("miniled"));
         }
 
         public void ToogleFHD()
@@ -141,6 +152,9 @@ namespace GHelper.Display
             var laptopScreen = ScreenNative.FindLaptopScreen();
             int frequency = ScreenNative.GetRefreshRate(laptopScreen);
             int maxFrequency = ScreenNative.GetMaxRefreshRate(laptopScreen);
+
+            if (maxFrequency > 0) AppConfig.Set("max_frequency", maxFrequency);
+            else maxFrequency = AppConfig.Get("max_frequency");
 
             bool screenAuto = AppConfig.Is("screen_auto");
             bool overdriveSetting = Program.acpi.IsOverdriveSupported() && !AppConfig.IsNoOverdrive();

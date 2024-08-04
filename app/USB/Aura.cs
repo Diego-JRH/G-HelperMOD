@@ -241,20 +241,20 @@ namespace GHelper.USB
         }
 
 
-        public static byte[] AuraMessage(AuraMode mode, Color color, Color color2, int speed, bool mono = false, byte zoneByte = 0x00)
+        public static byte[] AuraMessage(AuraMode mode, Color color, Color color2, int speed, bool mono = false)
         {
 
             byte[] msg = new byte[17];
             msg[0] = AsusHid.AURA_ID;
             msg[1] = 0xB3;
-            msg[2] = zoneByte; // Zone 
+            msg[2] = 0x00; // Zone 
             msg[3] = (byte)mode; // Aura Mode
             msg[4] = color.R; // R
             msg[5] = mono ? (byte)0 : color.G; // G
             msg[6] = mono ? (byte)0 : color.B; // B
             msg[7] = (byte)speed; // aura.speed as u8;
             msg[8] = 0x00; // aura.direction as u8;
-            msg[9] = mode == AuraMode.AuraBreathe ? (byte)1 : (byte)0;
+            msg[9] = (color.R == 0 && color.G == 0 && color.B == 0) ? (byte)0xFF : (byte)0x00; // random color flag
             msg[10] = color2.R; // R
             msg[11] = mono ? (byte)0 : color2.G; // G
             msg[12] = mono ? (byte)0 : color2.B; // B
@@ -354,36 +354,36 @@ namespace GHelper.USB
         public static void ApplyPower()
         {
 
-            bool onBattery = SystemInformation.PowerStatus.PowerLineStatus != PowerLineStatus.Online;
+            bool backlightBattery = AppConfig.IsBacklightZones() && (SystemInformation.PowerStatus.PowerLineStatus != PowerLineStatus.Online);
 
             AuraPower flags = new();
 
             // Keyboard
-            flags.AwakeKeyb = onBattery ? AppConfig.IsOnBattery("keyboard_awake") : AppConfig.IsNotFalse("keyboard_awake");
+            flags.AwakeKeyb = backlightBattery ? AppConfig.IsOnBattery("keyboard_awake") : AppConfig.IsNotFalse("keyboard_awake");
             flags.BootKeyb = AppConfig.IsNotFalse("keyboard_boot");
             flags.SleepKeyb = AppConfig.IsNotFalse("keyboard_sleep");
             flags.ShutdownKeyb = AppConfig.IsNotFalse("keyboard_shutdown");
 
             // Logo
-            flags.AwakeLogo = onBattery ? AppConfig.IsOnBattery("keyboard_awake_logo") : AppConfig.IsNotFalse("keyboard_awake_logo");
+            flags.AwakeLogo = backlightBattery ? AppConfig.IsOnBattery("keyboard_awake_logo") : AppConfig.IsNotFalse("keyboard_awake_logo");
             flags.BootLogo = AppConfig.IsNotFalse("keyboard_boot_logo");
             flags.SleepLogo = AppConfig.IsNotFalse("keyboard_sleep_logo");
             flags.ShutdownLogo = AppConfig.IsNotFalse("keyboard_shutdown_logo");
 
             // Lightbar
-            flags.AwakeBar = onBattery ? AppConfig.IsOnBattery("keyboard_awake_bar") : AppConfig.IsNotFalse("keyboard_awake_bar");
+            flags.AwakeBar = backlightBattery ? AppConfig.IsOnBattery("keyboard_awake_bar") : AppConfig.IsNotFalse("keyboard_awake_bar");
             flags.BootBar = AppConfig.IsNotFalse("keyboard_boot_bar");
             flags.SleepBar = AppConfig.IsNotFalse("keyboard_sleep_bar");
             flags.ShutdownBar = AppConfig.IsNotFalse("keyboard_shutdown_bar");
 
             // Lid
-            flags.AwakeLid = onBattery ? AppConfig.IsOnBattery("keyboard_awake_lid") : AppConfig.IsNotFalse("keyboard_awake_lid");
+            flags.AwakeLid = backlightBattery ? AppConfig.IsOnBattery("keyboard_awake_lid") : AppConfig.IsNotFalse("keyboard_awake_lid");
             flags.BootLid = AppConfig.IsNotFalse("keyboard_boot_lid");
             flags.SleepLid = AppConfig.IsNotFalse("keyboard_sleep_lid");
             flags.ShutdownLid = AppConfig.IsNotFalse("keyboard_shutdown_lid");
 
             // Rear Bar
-            flags.AwakeRear = onBattery ? AppConfig.IsOnBattery("keyboard_awake_lid") : AppConfig.IsNotFalse("keyboard_awake_lid");
+            flags.AwakeRear = backlightBattery ? AppConfig.IsOnBattery("keyboard_awake_lid") : AppConfig.IsNotFalse("keyboard_awake_lid");
             flags.BootRear = AppConfig.IsNotFalse("keyboard_boot_lid");
             flags.SleepRear = AppConfig.IsNotFalse("keyboard_sleep_lid");
             flags.ShutdownRear = AppConfig.IsNotFalse("keyboard_shutdown_lid");
