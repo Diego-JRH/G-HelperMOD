@@ -85,8 +85,7 @@ namespace GHelper.Input
 
             InitBacklightTimer();
 
-            if (AppConfig.IsVivoZenbook())
-                Program.acpi.DeviceSet(AsusACPI.FnLock, AppConfig.Is("fn_lock") ^ AppConfig.IsInvertedFNLock() ? 1 : 0, "FnLock");
+            if (AppConfig.IsHardwareFnLock()) HardwareFnLock(AppConfig.Is("fn_lock"));
 
         }
 
@@ -155,7 +154,7 @@ namespace GHelper.Input
 
             // FN-Lock group
 
-            if (AppConfig.Is("fn_lock") && !AppConfig.IsVivoZenbook())
+            if (AppConfig.Is("fn_lock") && !AppConfig.IsHardwareFnLock())
                 for (Keys i = Keys.F1; i <= Keys.F11; i++) hook.RegisterHotKey(ModifierKeys.None, i);
 
             // Arrow-lock group
@@ -277,6 +276,43 @@ namespace GHelper.Input
                             return;
                         case Keys.F4:
                             KeyProcess("m3");
+                            return;
+                    }
+                }
+
+                if (AppConfig.IsProArt())
+                {
+                    switch (e.Key)
+                    {
+                        case Keys.F2:
+                            KeyboardHook.KeyPress(Keys.VolumeDown);
+                            return;
+                        case Keys.F3:
+                            KeyboardHook.KeyPress(Keys.VolumeUp);
+                            return;
+                        case Keys.F4:
+                            HandleEvent(199); // Backlight cycle
+                            return;
+                        case Keys.F5:
+                            SetBrightness(-10);
+                            return;
+                        case Keys.F6:
+                            SetBrightness(+10);
+                            return;
+                        case Keys.F7:
+                            KeyboardHook.KeyKeyPress(Keys.LWin, Keys.P);
+                            return;
+                        case Keys.F8:
+                            HandleEvent(126); // Emojis
+                            return;
+                        case Keys.F9:
+                            KeyProcess("m3"); // MicMute
+                            return;
+                        case Keys.F10:
+                            HandleEvent(133); // Camera Toggle
+                            return;
+                        case Keys.F11:
+                            KeyboardHook.KeyPress(Keys.Snapshot); // PrintScreen
                             return;
                     }
                 }
@@ -592,13 +628,19 @@ namespace GHelper.Input
             Program.toast.RunToast("Arrow-Lock " + (arLock == 1 ? Properties.Strings.On : Properties.Strings.Off), ToastIcon.FnLock);
         }
 
+        public static void HardwareFnLock(bool fnLock)
+        {
+            Program.acpi.DeviceSet(AsusACPI.FnLock, fnLock ^ AppConfig.IsInvertedFNLock() ? 1 : 0, "FnLock");
+            AsusHid.WriteInput([AsusHid.INPUT_ID, 0xD0, 0x4E, fnLock ? (byte)0x00 : (byte)0x01], "USB FnLock");
+        }
+
         public static void ToggleFnLock()
         {
             bool fnLock = !AppConfig.Is("fn_lock");
             AppConfig.Set("fn_lock", fnLock ? 1 : 0);
 
-            if (AppConfig.IsVivoZenbook())
-                Program.acpi.DeviceSet(AsusACPI.FnLock, fnLock ^ AppConfig.IsInvertedFNLock() ? 1 : 0, "FnLock");
+            if (AppConfig.IsHardwareFnLock()) 
+                HardwareFnLock(fnLock);
             else
                 Program.settingsForm.BeginInvoke(Program.inputDispatcher.RegisterKeys);
 
@@ -658,6 +700,7 @@ namespace GHelper.Input
                 switch (EventID)
                 {
                     case 134:     // FN + F12 ON OLD DEVICES
+                    case 139:     // ProArt F12
                         KeyProcess("m4");
                         return;
                     case 124:    // M3
@@ -668,9 +711,6 @@ namespace GHelper.Input
                         return;
                     case 55:    // Arconym
                         KeyProcess("m6");
-                        return;
-                    case 136:    // FN + F12
-                        if (!AppConfig.IsNoAirplaneMode()) Program.acpi.DeviceSet(AsusACPI.UniversalControl, AsusACPI.Airplane, "Airplane");
                         return;
                     case 181:    // FN + Numpad Enter
                         KeyProcess("fne");
@@ -687,12 +727,6 @@ namespace GHelper.Input
                         return;
                     case 158:   // Fn + C
                         KeyProcess("fnc");
-                        return;
-                    case 78:    // Fn + ESC
-                        ToggleFnLock();
-                        return;
-                    case 75:    // Fn + ESC
-                        ToggleArrowLock();
                         return;
                     case 189: // Tablet mode
                         TabletMode();
@@ -779,6 +813,18 @@ namespace GHelper.Input
                 case 51:    // Fn+F6 on old TUFs
                 case 53:    // Fn+F6 on GA-502DU model
                     NativeMethods.TurnOffScreen();
+                    return;
+                case 126:    // Fn+F8 emojis popup
+                    KeyboardHook.KeyKeyPress(Keys.LWin, Keys.OemSemicolon);
+                    return;
+                case 78:    // Fn + ESC
+                    ToggleFnLock();
+                    return;
+                case 75:    // Fn + Arrow Lock
+                    ToggleArrowLock();
+                    return;
+                case 136:    // FN + F12
+                    if (!AppConfig.IsNoAirplaneMode()) Program.acpi.DeviceSet(AsusACPI.UniversalControl, AsusACPI.Airplane, "Airplane");
                     return;
 
 
