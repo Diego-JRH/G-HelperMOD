@@ -49,6 +49,11 @@ namespace GHelper
             labelBIOS.Text = "BIOS";
             labelDrivers.Text = Properties.Strings.DriverAndSoftware;
 
+            labelLegend.Text = Properties.Strings.Legend;
+            labelLegendGray.Text = Properties.Strings.LegendGray;
+            labelLegendRed.Text = Properties.Strings.LegendRed;
+            labelLegendGreen.Text = Properties.Strings.LegendGreen;
+
             SuspendLayout();
 
             tableBios.Visible = false;
@@ -206,17 +211,26 @@ namespace GHelper
 
         public void VisualiseNewCount(int updatesCount, TableLayoutPanel table)
         {
-            Invoke(delegate
+            if (InvokeRequired)
             {
-                labelUpdates.Text = $"{Properties.Strings.NewUpdates}: {updatesCount}";
-                labelUpdates.ForeColor = colorTurbo;
-                labelUpdates.Font = new Font(labelUpdates.Font, FontStyle.Bold);
-
-                panelBios.AccessibleName = labelUpdates.Text;
-
-            });
+                Invoke(delegate
+                {
+                    _VisualiseNewCount(updatesCount, table);
+                });
+            }
+            else
+            {
+                _VisualiseNewCount(updatesCount, table);
+            }
         }
 
+        public void _VisualiseNewCount(int updatesCount, TableLayoutPanel table)
+        {
+            labelUpdates.Text = $"{Properties.Strings.NewUpdates}: {updatesCount}";
+            labelUpdates.ForeColor = colorTurbo;
+            labelUpdates.Font = new Font(labelUpdates.Font, FontStyle.Bold);
+            panelBios.AccessibleName = labelUpdates.Text;
+        }
 
         static string CleanupDeviceId(string input)
         {
