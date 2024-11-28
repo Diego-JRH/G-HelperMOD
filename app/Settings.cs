@@ -235,6 +235,7 @@ namespace GHelper
 
             labelCharge.MouseEnter += PanelBattery_MouseEnter;
             labelCharge.MouseLeave += PanelBattery_MouseLeave;
+            labelBattery.Click += LabelBattery_Click;
 
             buttonPeripheral1.Click += ButtonPeripheral_Click;
             buttonPeripheral2.Click += ButtonPeripheral_Click;
@@ -271,8 +272,9 @@ namespace GHelper
             labelCharge.Click += LabelCharge_Click;
 
             buttonDonate.Click += ButtonDonate_Click;
-            
-            if (AppConfig.Get("start_count") > 10 && !AppConfig.Is("donate_click"))
+
+            int click = AppConfig.Get("donate_click");
+            if (AppConfig.Get("start_count") >= ((click < 10) ? 10 : click + 50))
             {
                 buttonDonate.BorderColor = colorTurbo;
                 buttonDonate.Badge = true;
@@ -284,11 +286,17 @@ namespace GHelper
             InitVisual();
         }
 
+        private void LabelBattery_Click(object? sender, EventArgs e)
+        {
+            HardwareControl.chargeWatt = !HardwareControl.chargeWatt;
+            RefreshSensors(true);
+        }
+
         private void ButtonDonate_Click(object? sender, EventArgs e)
         {
-            AppConfig.Set("donate_click", 1);
+            AppConfig.Set("donate_click", AppConfig.Get("start_count"));
             buttonDonate.Badge = false;
-            Process.Start(new ProcessStartInfo("https://github.com/seerge/g-helper/wiki/Support-Project") { UseShellExecute = true });
+            Process.Start(new ProcessStartInfo("https://g-helper.com/support") { UseShellExecute = true });
         }
 
         private void LabelDynamicLighting_Click(object? sender, EventArgs e)
@@ -667,14 +675,14 @@ namespace GHelper
                     {
                         case 0:
                             Logger.WriteLine("Lid Closed");
+                            InputDispatcher.lidClose = AniMatrixControl.lidClose = true;
                             Aura.ApplyBrightness(0, "Lid");
-                            AniMatrixControl.lidClose = true;
                             matrixControl.SetLidMode();
                             break;
                         case 1:
                             Logger.WriteLine("Lid Open");
+                            InputDispatcher.lidClose = AniMatrixControl.lidClose = false;
                             Aura.ApplyBrightness(InputDispatcher.GetBacklight(), "Lid");
-                            AniMatrixControl.lidClose = false;
                             matrixControl.SetLidMode();
                             break;
                     }
@@ -843,7 +851,7 @@ namespace GHelper
 
         private void Button60Hz_MouseHover(object? sender, EventArgs e)
         {
-            labelTipScreen.Text = Properties.Strings.MinRefreshTooltip;
+            labelTipScreen.Text = Properties.Strings.MinRefreshTooltip.Replace("60", ScreenControl.MIN_RATE.ToString());
         }
 
         private void ButtonScreen_MouseLeave(object? sender, EventArgs e)
@@ -853,7 +861,7 @@ namespace GHelper
 
         private void ButtonScreenAuto_MouseHover(object? sender, EventArgs e)
         {
-            labelTipScreen.Text = Properties.Strings.AutoRefreshTooltip;
+            labelTipScreen.Text = Properties.Strings.AutoRefreshTooltip.Replace("60", ScreenControl.MIN_RATE.ToString());
         }
 
         private void ButtonUltimate_MouseHover(object? sender, EventArgs e)
@@ -1208,7 +1216,7 @@ namespace GHelper
         private void Button60Hz_Click(object? sender, EventArgs e)
         {
             AppConfig.Set("screen_auto", 0);
-            screenControl.SetScreen(60, 0);
+            screenControl.SetScreen(ScreenControl.MIN_RATE, 0);
         }
 
 
@@ -1239,16 +1247,18 @@ namespace GHelper
             {
                 buttonScreenAuto.Activated = true;
             }
-            else if (frequency == 60)
+            else if (frequency == ScreenControl.MIN_RATE)
             {
                 button60Hz.Activated = true;
             }
-            else if (frequency > 60)
+            else if (frequency > ScreenControl.MIN_RATE)
             {
                 button120Hz.Activated = true;
             }
 
-            if (maxFrequency > 60)
+            button60Hz.Text = ScreenControl.MIN_RATE + "Hz";
+
+            if (maxFrequency > ScreenControl.MIN_RATE)
             {
                 button120Hz.Text = maxFrequency.ToString() + "Hz" + (overdriveSetting ? " + OD" : "");
                 panelScreen.Visible = true;
@@ -1420,7 +1430,9 @@ namespace GHelper
                 cpuTemp = ": " + Math.Round((decimal)HardwareControl.cpuTemp).ToString() + "°C";
 
             if (HardwareControl.batteryCapacity > 0)
-                charge = Properties.Strings.BatteryCharge + ": " + Math.Round(HardwareControl.batteryCapacity, 1) + "% ";
+            {
+                charge = Properties.Strings.BatteryCharge + ": " + HardwareControl.batteryCharge;
+            }
 
             if (HardwareControl.batteryRate < 0)
                 battery = Properties.Strings.Discharging + ": " + Math.Round(-(decimal)HardwareControl.batteryRate, 1).ToString() + "W";
@@ -1529,24 +1541,6 @@ namespace GHelper
 
         }
 
-
-        public void AutoKeyboard()
-        {
-
-            InputDispatcher.SetBacklightAuto(true);
-
-            if (!AppConfig.Is("skip_aura"))
-            {
-                Aura.ApplyPower();
-                Aura.ApplyAura();
-            }
-
-            if (Program.acpi.IsXGConnected())
-                XGM.Light(AppConfig.Is("xmg_light"));
-
-            if (AppConfig.HasTabletMode()) InputDispatcher.TabletMode();
-
-        }
 
 
         public void VisualizeXGM(int GPUMode = -1)
@@ -1783,7 +1777,7 @@ namespace GHelper
 
         public void VisualiseBatteryFull()
         {
-            if (AppConfig.Is("charge_full"))
+            if (BatteryControl.chargeFull)
             {
                 buttonBatteryFull.BackColor = colorStandard;
                 buttonBatteryFull.ForeColor = SystemColors.ControlLightLight;

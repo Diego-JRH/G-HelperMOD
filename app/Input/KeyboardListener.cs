@@ -10,6 +10,8 @@ namespace GHelper.Input
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         Action<int> _handler;
 
+        static int retry = 0;
+
         public KeyboardListener(Action<int> KeyHandler)
         {
             _handler = KeyHandler;
@@ -54,6 +56,7 @@ namespace GHelper.Input
                     input.ReadTimeout = int.MaxValue;
 
                     var data = input.Read();
+                    if (cancellationTokenSource.Token.IsCancellationRequested) break;
                     if (data.Length > 1 && data[0] == AsusHid.INPUT_ID && data[1] > 0 && data[1] != 236)
                     {
                         Logger.WriteLine($"Key: {data[1]}");
@@ -67,6 +70,12 @@ namespace GHelper.Input
             catch (Exception ex)
             {
                 Logger.WriteLine($"Listener exited: {ex.Message}");
+                if (retry++ < 2)
+                {
+                    Thread.Sleep(300);
+                    Logger.WriteLine($"Restarting listener {retry}");
+                    Listen();
+                }
             }
 
         }

@@ -6,6 +6,7 @@ using GHelper.Helpers;
 using GHelper.Input;
 using GHelper.Mode;
 using GHelper.Peripherals;
+using GHelper.USB;
 using Microsoft.Win32;
 using Ryzen;
 using System.Diagnostics;
@@ -172,6 +173,7 @@ namespace GHelper
         {
             gpuControl.StandardModeFix();
             BatteryControl.AutoBattery();
+            InputDispatcher.ShutdownStatusLed();
         }
 
         private static void SystemEvents_SessionSwitch(object sender, SessionSwitchEventArgs e)
@@ -231,7 +233,10 @@ namespace GHelper
             Logger.WriteLine("AutoSetting for " + isPlugged.ToString());
 
             BatteryControl.AutoBattery(init);
-            if (init) screenControl.InitMiniled();
+            if (init)
+            {
+                InputDispatcher.InitScreenpad();
+            }
 
             inputDispatcher.Init();
 
@@ -253,9 +258,12 @@ namespace GHelper
             }
             else
             {
-                settingsForm.AutoKeyboard();
+                InputDispatcher.AutoKeyboard();
             }
 
+            screenControl.InitMiniled();
+            InputDispatcher.InitStatusLed();
+            XGM.InitLight();
             VisualControl.InitBrightness();
 
             return true;
@@ -268,6 +276,7 @@ namespace GHelper
             {
                 Logger.WriteLine("Power Mode Changed:" + e.Mode.ToString());
                 gpuControl.StandardModeFix();
+                InputDispatcher.ShutdownStatusLed();
             }
 
             int delay = AppConfig.Get("charger_delay");

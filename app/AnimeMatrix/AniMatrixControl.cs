@@ -36,7 +36,8 @@ namespace GHelper.AnimeMatrix
         public AniMatrixControl(SettingsForm settingsForm)
         {
             settings = settingsForm;
-
+            if (!AppConfig.IsSlash() && !AppConfig.IsAnimeMatrix()) return;
+            
             try
             {
                 if (AppConfig.IsSlash())
@@ -213,7 +214,7 @@ namespace GHelper.AnimeMatrix
                     switch (running)
                     {
                         case 2:
-                            SetMatrixPicture(AppConfig.GetString("matrix_picture"));
+                            SetMatrixPicture(AppConfig.GetString("matrix_picture"), false);
                             break;
                         case 3:
                             SetMatrixClock();
