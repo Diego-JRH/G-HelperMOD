@@ -24,6 +24,7 @@ namespace GHelper.Input
         public static Keys keyProfile2 = (Keys)AppConfig.Get("keybind_profile_2", (int)Keys.F16);
         public static Keys keyProfile3 = (Keys)AppConfig.Get("keybind_profile_3", (int)Keys.F19);
         public static Keys keyProfile4 = (Keys)AppConfig.Get("keybind_profile_4", (int)Keys.F20);
+        public static Keys keyXGM = (Keys)AppConfig.Get("keybind_xgm", (int)Keys.F21);
 
         static ModeControl modeControl = Program.modeControl;
         static ScreenControl screenControl = new ScreenControl();
@@ -142,6 +143,7 @@ namespace GHelper.Input
                 hook.RegisterHotKey(ModifierKeys.Shift | ModifierKeys.Control | ModifierKeys.Alt, keyProfile2);
                 hook.RegisterHotKey(ModifierKeys.Shift | ModifierKeys.Control | ModifierKeys.Alt, keyProfile3);
                 hook.RegisterHotKey(ModifierKeys.Shift | ModifierKeys.Control | ModifierKeys.Alt, keyProfile4);
+                hook.RegisterHotKey(ModifierKeys.Shift | ModifierKeys.Control | ModifierKeys.Alt, keyXGM);
 
                 hook.RegisterHotKey(ModifierKeys.Control, Keys.VolumeDown);
                 hook.RegisterHotKey(ModifierKeys.Control, Keys.VolumeUp);
@@ -162,6 +164,7 @@ namespace GHelper.Input
                 hook.RegisterHotKey(ModifierKeys.Shift | ModifierKeys.Control | ModifierKeys.Alt, Keys.F2);
                 hook.RegisterHotKey(ModifierKeys.Shift | ModifierKeys.Control | ModifierKeys.Alt, Keys.F3);
                 hook.RegisterHotKey(ModifierKeys.Shift | ModifierKeys.Control | ModifierKeys.Alt, Keys.F4);
+                hook.RegisterHotKey(ModifierKeys.Shift | ModifierKeys.Control | ModifierKeys.Alt, Keys.F6);
             }
 
             // FN-Lock group
@@ -438,6 +441,7 @@ namespace GHelper.Input
                 if (e.Key == keyProfile2) modeControl.SetPerformanceMode(2, true);
                 if (e.Key == keyProfile3) modeControl.SetPerformanceMode(3, true);
                 if (e.Key == keyProfile4) modeControl.SetPerformanceMode(4, true);
+                if (e.Key == keyXGM) Program.settingsForm.gpuControl.ToggleXGM(true);
 
                 switch (e.Key)
                 {
@@ -452,6 +456,9 @@ namespace GHelper.Input
                         break;
                     case Keys.F4:
                         Program.settingsForm.BeginInvoke(Program.settingsForm.allyControl.ToggleModeHotkey);
+                        break;
+                    case Keys.F6:
+                        ToggleTouchScreen();
                         break;
                     case Keys.F7:
                         SetScreenpad(-10);
@@ -602,19 +609,24 @@ namespace GHelper.Input
                     Program.settingsForm.BeginInvoke(Program.settingsForm.allyControl.ToggleModeHotkey);
                     break;
                 case "touchscreen":
-                    var status = !TouchscreenHelper.GetStatus();
-                    Logger.WriteLine("Touchscreen status: " + status);
-                    if (status is not null)
-                    {
-                        Program.toast.RunToast(Properties.Strings.Touchscreen + " " + ((bool)status ? Properties.Strings.On : Properties.Strings.Off), ToastIcon.Touchpad);
-                        TouchscreenHelper.ToggleTouchscreen((bool)status);
-                    }
+                    ToggleTouchScreen();
                     break;
                 default:
                     break;
             }
         }
 
+
+        static void ToggleTouchScreen()
+        {
+            var status = !TouchscreenHelper.GetStatus();
+            Logger.WriteLine("Touchscreen status: " + status);
+            if (status is not null)
+            {
+                Program.toast.RunToast(Properties.Strings.Touchscreen + " " + ((bool)status ? Properties.Strings.On : Properties.Strings.Off), ToastIcon.Touchpad);
+                TouchscreenHelper.ToggleTouchscreen((bool)status);
+            }
+        }
 
         static void ToggleMic()
         {
@@ -886,14 +898,15 @@ namespace GHelper.Input
             Aura.Init();
             Aura.ApplyPower();
             Aura.ApplyAura();
-            SetBacklightAuto();
+            SetBacklightAuto(true);
         }
 
 
-        public static void SetBacklightAuto()
+        public static void SetBacklightAuto(bool init = false)
         {
             if (lidClose) return;
-            Aura.ApplyBrightness(GetBacklight(), "Auto");
+            if (init) Aura.Init();
+            Aura.ApplyBrightness(GetBacklight(), "Auto", init);
         }
 
         public static void SetBacklight(int delta, bool force = false)
@@ -903,11 +916,12 @@ namespace GHelper.Input
             bool onBattery = SystemInformation.PowerStatus.PowerLineStatus != PowerLineStatus.Online;
 
             int backlight = onBattery ? backlight_battery : backlight_power;
+            int backlightMax = AppConfig.Get("max_brightness", 3);
 
-            if (delta >= 4)
-                backlight = ++backlight % 4;
+            if (delta > backlightMax)
+                backlight = ++backlight % (backlightMax + 1);
             else
-                backlight = Math.Max(Math.Min(3, backlight + delta), 0);
+                backlight = Math.Max(Math.Min(backlightMax, backlight + delta), 0);
 
             if (onBattery)
                 AppConfig.Set("keyboard_brightness_ac", backlight);
