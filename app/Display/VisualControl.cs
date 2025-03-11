@@ -1,5 +1,6 @@
 ﻿using GHelper.Helpers;
 using Microsoft.Win32;
+using Ryzen;
 using System.Management;
 
 namespace GHelper.Display
@@ -28,6 +29,8 @@ namespace GHelper.Display
         Init = 10,
         DimmingVivo = 9,
         DimmingVisual = 19,
+        DimmingDuo = 109,
+
         GamutMode = 200,
 
         Default = 11,
@@ -222,6 +225,16 @@ namespace GHelper.Display
             Registry.SetValue(GameVisualKey, GameVisualValue, status, RegistryValueKind.DWord);
         }
 
+        public static void InitGamut()
+        {
+            int gamut = AppConfig.Get("gamut");
+
+            if (gamut < 0) return;
+            if ((SplendidGamut)gamut == SplendidGamut.Native || (SplendidGamut)gamut == SplendidGamut.VivoNative) return; 
+
+            SetGamut(gamut);
+        }
+
         public static void SetGamut(int mode = -1)
         {
             if (skipGamut) return;
@@ -252,7 +265,8 @@ namespace GHelper.Display
         public static void SetVisual(SplendidCommand mode = SplendidCommand.Default, int whiteBalance = DefaultColorTemp, bool init = false)
         {
             if (mode == SplendidCommand.None) return;
-            if ((mode == SplendidCommand.Disabled || mode == SplendidCommand.Default || mode == SplendidCommand.VivoNormal) && init) return; // Skip default setting on init
+            if ((mode == SplendidCommand.Default || mode == SplendidCommand.VivoNormal) && init) return; // Skip default setting on init
+            if (mode == SplendidCommand.Disabled && !RyzenControl.IsAMD() && init) return; // Skip disabled setting for Intel devices
 
             if (!forceVisual && ScreenCCD.GetHDRStatus(true)) return;
             if (!forceVisual && ScreenNative.GetRefreshRate(ScreenNative.FindLaptopScreen(true)) < 0) return;
@@ -316,7 +330,7 @@ namespace GHelper.Display
                         foreach (var driver in searcher.Get())
                         {
                             string path = driver["PathName"].ToString();
-                            _splendidPath = Path.GetDirectoryName(path) + "\\AsusSplendid.exe";
+                            _splendidPath = Path.GetDirectoryName(path);
                             break;
                         }
                     }
@@ -332,14 +346,14 @@ namespace GHelper.Display
 
         private static int RunSplendid(SplendidCommand command, int? param1 = null, int? param2 = null)
         {
-            var splendid = GetSplendidPath();
+            string splendidPath = GetSplendidPath();
+            string splendidExe = $"{splendidPath}\\AsusSplendid.exe";
             bool isVivo = AppConfig.IsVivoZenPro();
-            bool isSplenddid = File.Exists(splendid);
+            bool isSplenddid = File.Exists(splendidExe);
 
             if (isSplenddid)
             {
-                if (command == SplendidCommand.DimmingVisual && isVivo) command = SplendidCommand.DimmingVivo;
-                var result = ProcessHelper.RunCMD(splendid, (int)command + " " + param1 + " " + param2);
+                var result = ProcessHelper.RunCMD(splendidExe, (int)command + " " + param1 + " " + param2, splendidPath);
                 if (result.Contains("file not exist") || (result.Length == 0 && !isVivo)) return 1;
                 if (result.Contains("return code: -1")) return -1;
                 if (result.Contains("Visual is disabled"))
@@ -356,15 +370,18 @@ namespace GHelper.Display
         {
             brightnessTimer.Stop();
 
+            var dimmingCommand = AppConfig.IsVivoZenPro() ? SplendidCommand.DimmingVivo : SplendidCommand.DimmingVisual;
+            var dimmingLevel = (int)(40 + _brightness * 0.6);
 
-            if (RunSplendid(SplendidCommand.DimmingVisual, 0, (int)(40 + _brightness * 0.6)) == 0) return;
+            if (AppConfig.IsDUO()) RunSplendid(SplendidCommand.DimmingDuo, 0, dimmingLevel);
+            if (RunSplendid(dimmingCommand, 0, dimmingLevel) == 0) return;
 
             if (_init)
             {
                 _init = false;
                 RunSplendid(SplendidCommand.Init);
                 RunSplendid(SplendidCommand.Init, 4);
-                if (RunSplendid(SplendidCommand.DimmingVisual, 0, (int)(40 + _brightness * 0.6)) == 0) return;
+                if (RunSplendid(dimmingCommand, 0, dimmingLevel) == 0) return;
             }
 
             // GammaRamp Fallback

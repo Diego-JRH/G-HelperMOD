@@ -233,11 +233,8 @@ namespace GHelper
             Logger.WriteLine("AutoSetting for " + isPlugged.ToString());
 
             BatteryControl.AutoBattery(init);
-            if (init)
-            {
-                InputDispatcher.InitScreenpad();
-                screenControl.InitOptimalBrightness();
-            }
+            if (init) InputDispatcher.InitScreenpad();
+            screenControl.InitOptimalBrightness();
 
             inputDispatcher.Init();
 
@@ -317,7 +314,7 @@ namespace GHelper
                 settingsForm.Top = screen.WorkingArea.Height - 10 - settingsForm.Height;
 
                 settingsForm.Show();
-                settingsForm.Activate();
+                settingsForm.ShowAll();
 
                 settingsForm.Left = screen.WorkingArea.Width - 10 - settingsForm.Width;
 
