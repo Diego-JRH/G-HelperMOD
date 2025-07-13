@@ -3,7 +3,7 @@
 [![GitHub release](https://img.shields.io/github/release/seerge/g-helper)](https://GitHub.com/seerge/g-helper/releases/) 
 [![Github all releases](https://img.shields.io/github/downloads/seerge/g-helper/total)](https://GitHub.com/seerge/g-helper/releases/) [![GitHub stars](https://img.shields.io/github/stars/seerge/g-helper.svg?style=social)](https://GitHub.com/seerge/g-helper/stargazers/) <sup>[中文版点这里](https://github.com/seerge/g-helper/blob/main/docs/README.zh-CN.md)</sup> <sup>[日本語はこちら](https://github.com/seerge/g-helper/blob/main/docs/README.ja-JP.md)</sup>
 
-Small and lightweight Armoury Crate alternative for Asus laptops offering almost same functionality with a much smaller footprint. Works with all popular models, such as ROG Zephyrus G14, G15, G16, M16, Flow X13, Flow X16, Flow Z13, DUO, TUF Series, Strix or Scar Series, ProArt, Vivobook, Zenbook, ROG Ally or Ally X and many more! 
+Small and lightweight Armoury Crate alternative for Asus laptops offering almost same functionality with a much smaller footprint. Works with all popular models, such as ROG Zephyrus G14, G15, G16, M16, Flow X13, Flow X16, Flow Z13, DUO, TUF Series, Strix or Scar Series, ProArt, Vivobook, Zenbook, Expertbook, ROG Ally or Ally X and many more! 
 
 # [:floppy_disk: Download](https://github.com/seerge/g-helper/releases/latest/download/GHelper.zip)
 **⭐ If you like the app - please spread the word about it online**
@@ -12,10 +12,10 @@ Small and lightweight Armoury Crate alternative for Asus laptops offering almost
 <tr>
    <td><b>Support Project</b></td>
    <td >
-      <a href="https://bit.ly/4c0ZWs9"><img src="https://raw.githubusercontent.com/seerge/g-helper/main/docs/paypal-eur.png" height="36" alt="PayPal EUR"></a>&nbsp;
-      <a href="https://bit.ly/4aGTyW8"><img src="https://raw.githubusercontent.com/seerge/g-helper/main/docs/paypal-usd.png" height="36" alt="PayPal USD"></a>&nbsp;
-      <a href="https://buy.stripe.com/8wM6pt8HbgK50tWbIK"><img src="https://raw.githubusercontent.com/seerge/g-helper/main/docs/stripe.png" height="36" alt="Stripe"></a>&nbsp;
-      <a href="https://buy.stripe.com/6oE29dg9D3Xj7Wo28b"><img src="https://raw.githubusercontent.com/seerge/g-helper/main/docs/alipay.png" height="36" alt="Alipay"></a>
+      <a href="https://www.paypal.com/donate/?hosted_button_id=Y7UNMPRNLB5X2"><img src="https://raw.githubusercontent.com/seerge/g-helper/main/docs/paypal-eur.png" width="150" alt="PayPal EUR"></a>&nbsp;
+      <a href="https://www.paypal.com/donate/?hosted_button_id=JSMU7DFHFSJMW"><img src="https://raw.githubusercontent.com/seerge/g-helper/main/docs/paypal-usd.png" width="150" alt="PayPal USD"></a>&nbsp;
+      <a href="https://buy.stripe.com/8wM6pt8HbgK50tWbIK"><img src="https://raw.githubusercontent.com/seerge/g-helper/main/docs/stripe.png" width="150"alt="Stripe"></a>&nbsp;
+      <a href="https://buy.stripe.com/6oE29dg9D3Xj7Wo28b"><img src="https://raw.githubusercontent.com/seerge/g-helper/main/docs/alipay.png" width="150" alt="Alipay"></a>
    </td>
 </tr>
 </table>
@@ -41,7 +41,7 @@ Small and lightweight Armoury Crate alternative for Asus laptops offering almost
 
 1. Seamless and automatic GPU switching
 2. All performance modes can be fully customized with power limits and fan curves
-3. Lightweight. Doesn't install anything in your system. Just a single exe to run
+3. Lightweight. Just a single exe to run. Doesn't install anything in your system. 
 4. Simple and clean native UI with easy access to all settings
 5. FN-Lock and custom hotkeys
 

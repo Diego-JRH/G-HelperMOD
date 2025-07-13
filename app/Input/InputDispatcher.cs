@@ -15,6 +15,7 @@ namespace GHelper.Input
         System.Timers.Timer timer = new System.Timers.Timer(1000);
         public static bool backlightActivity = true;
         public static bool lidClose = false;
+        public static bool tentMode = false;
 
         public static Keys keyProfile = (Keys)AppConfig.Get("keybind_profile", (int)Keys.F5);
         public static Keys keyApp = (Keys)AppConfig.Get("keybind_app", (int)Keys.F12);
@@ -30,7 +31,6 @@ namespace GHelper.Input
         public static ModifierKeys keyModifierAlt = GetModifierKeys("modifier_keybind_alt", ModifierKeys.Shift | ModifierKeys.Control | ModifierKeys.Alt);
 
         static ModeControl modeControl = Program.modeControl;
-        static ScreenControl screenControl = new ScreenControl();
 
         static bool isTUF = AppConfig.IsTUF();
 
@@ -100,9 +100,11 @@ namespace GHelper.Input
             }
 
             InitBacklightTimer();
+        }
 
+        public static void InitFNLock()
+        {
             if (AppConfig.IsHardwareFnLock()) HardwareFnLock(AppConfig.Is("fn_lock"));
-
         }
 
         public void InitBacklightTimer()
@@ -575,11 +577,11 @@ namespace GHelper.Input
                     break;
                 case "miniled":
                     if (ScreenCCD.GetHDRStatus()) return;
-                    string miniledName = screenControl.ToogleMiniled();
+                    string miniledName = ScreenControl.ToogleMiniled();
                     Program.toast.RunToast(miniledName, miniledName == Properties.Strings.OneZone ? ToastIcon.BrightnessDown : ToastIcon.BrightnessUp);
                     break;
                 case "aura":
-                    Program.settingsForm.BeginInvoke(Program.settingsForm.CycleAuraMode);
+                    Program.settingsForm.BeginInvoke(Program.settingsForm.CycleAuraMode, Control.ModifierKeys == Keys.Shift ? -1 : 1);
                     break;
                 case "visual":
                     Program.settingsForm.BeginInvoke(Program.settingsForm.CycleVisualMode);
@@ -636,6 +638,11 @@ namespace GHelper.Input
         }
 
 
+        static void MuteLED()
+        {
+            Program.acpi.DeviceSet(AsusACPI.SoundMuteLed, Audio.IsMuted() ? 1 : 0, "SoundLed");
+        }
+
         static void ToggleTouchScreen()
         {
             var status = !TouchscreenHelper.GetStatus();
@@ -649,7 +656,7 @@ namespace GHelper.Input
 
         static void ToggleMic()
         {
-            bool muteStatus = Audio.ToggleMute();
+            bool muteStatus = Audio.ToggleMicMute();
             Program.toast.RunToast(muteStatus ? Properties.Strings.Muted : Properties.Strings.Unmuted, muteStatus ? ToastIcon.MicrophoneMute : ToastIcon.Microphone);
             if (AppConfig.IsVivoZenbook()) Program.acpi.DeviceSet(AsusACPI.MicMuteLed, muteStatus ? 1 : 0, "MicmuteLed");
         }
@@ -717,17 +724,46 @@ namespace GHelper.Input
             Program.toast.RunToast(fnLock ? Properties.Strings.FnLockOn : Properties.Strings.FnLockOff, ToastIcon.FnLock);
         }
 
+        public static void SetSlateMode(int status)
+        {
+            try
+            {
+                Registry.SetValue(@"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\PriorityControl", "ConvertibleSlateMode", status, RegistryValueKind.DWord);
+                Logger.WriteLine("Setting ConvertibleSlateMode : " + status);
+            } catch (Exception ex)
+            {
+                Logger.WriteLine("Can't set ConvertibleSlateMode: " + ex.Message);
+            }
+        }
+
         public static void TabletMode()
         {
             if (AppConfig.Is("disable_tablet")) return;
 
             bool touchpadState = GetTouchpadState();
             bool tabletState = Program.acpi.DeviceGet(AsusACPI.TabletState) > 0;
+            int slateState = Program.acpi.DeviceGet(AsusACPI.SlateMode);
 
-            Logger.WriteLine("Tablet: " + tabletState + " Touchpad: " + touchpadState);
+            Logger.WriteLine($"Tablet: {tabletState} | SlateMode: {slateState} | Touchpad: {touchpadState}");
 
+            if (slateState >= 0) SetSlateMode(slateState);
             if (tabletState && touchpadState || !tabletState && !touchpadState) ToggleTouchpad();
 
+        }
+
+        static int GetTentState()
+        {
+            var tentState = Program.acpi.DeviceGet(AsusACPI.TentState);
+            Logger.WriteLine($"Tent: {tentState}");
+            return tentState;
+        }
+
+        public static void TentMode()
+        {
+            var tentState = GetTentState();
+            if (tentState < 0) return;
+            tentMode = tentState > 0;
+            Aura.ApplyBrightness(tentMode ? 0 : GetBacklight(), "Tent");
         }
 
         static void HandleEvent(int EventID)
@@ -788,11 +824,12 @@ namespace GHelper.Input
                         return;
                     case 174:   // FN+F5
                     case 153:   // FN+F5 OLD MODELS
-                    case 157:   // Zenbook DUO FN+F
                         modeControl.CyclePerformanceMode(Control.ModifierKeys == Keys.Shift);
                         return;
+                    case 178:   // FN+LEFT ARROW / FN + F4
+                        Program.settingsForm.BeginInvoke(Program.settingsForm.CycleAuraMode, -1);
+                        return;
                     case 179:   // FN+F4
-                    case 178:   // FN+F4
                         KeyProcess("fnf4");
                         return;
                     case 138:   // Fn + V
@@ -899,8 +936,17 @@ namespace GHelper.Input
                 case 136:    // FN + F12
                     if (!AppConfig.IsNoAirplaneMode()) Program.acpi.DeviceSet(AsusACPI.UniversalControl, AsusACPI.Airplane, "Airplane");
                     return;
-
-
+                case 50:
+                    // Sound Mute Event
+                    MuteLED();
+                    return;
+                case 157:   // Zenbook DUO FN+F
+                    modeControl.CyclePerformanceMode(Control.ModifierKeys == Keys.Shift);
+                    return;
+                case 250:
+                    // Tent Mode
+                    TentMode();
+                    return;
             }
         }
 
@@ -922,20 +968,42 @@ namespace GHelper.Input
         public static void AutoKeyboard()
         {
             if (AppConfig.HasTabletMode()) TabletMode();
-            if (lidClose || AppConfig.Is("skip_aura")) return;
+            if (lidClose)
+            {
+                Logger.WriteLine("Skipping Backlight Init: Lid Closed");
+                return;
+            }
 
-            Aura.Init();
-            Aura.ApplyPower();
-            Aura.ApplyAura();
+            if (tentMode)
+            {
+                tentMode = GetTentState() > 0; 
+                if (tentMode)
+                {
+                    Logger.WriteLine("Skipping Backlight Init: Tent Mode");
+                    return;
+                }
+            }
+
+            if (!AppConfig.Is("skip_aura"))
+            {
+                Aura.Init();
+                Aura.ApplyPower();
+                Aura.ApplyAura();
+            }
+
             SetBacklightAuto(true);
         }
 
 
         public static void SetBacklightAuto(bool init = false)
         {
-            if (lidClose) return;
-            if (init) Aura.Init();
+            if (lidClose || tentMode) return;
             Aura.ApplyBrightness(GetBacklight(), "Auto", init);
+        }
+
+        public static void StartupBacklight()
+        {
+            Aura.DirectBrightness(GetBacklight(), "Startup");
         }
 
         public static void SetBacklight(int delta, bool force = false)
@@ -987,12 +1055,13 @@ namespace GHelper.Input
         public static void ToggleScreenRate()
         {
             AppConfig.Set("screen_auto", 0);
-            screenControl.ToggleScreenRate();
+            ScreenControl.ToggleScreenRate();
         }
 
         public static void ToggleCamera()
         {
             int cameraShutter = Program.acpi.DeviceGet(AsusACPI.CameraShutter);
+            Logger.WriteLine("Camera Shutter status: " + cameraShutter);
 
             if (cameraShutter == 0)
             {
@@ -1002,6 +1071,16 @@ namespace GHelper.Input
             else if (cameraShutter == 1)
             {
                 Program.acpi.DeviceSet(AsusACPI.CameraShutter, 0, "CameraShutterOff");
+                Program.toast.RunToast($"Camera On");
+            }
+            else if (cameraShutter == 1048577)
+            {
+                Program.acpi.DeviceSet(AsusACPI.CameraShutter, 5, "CameraShutter");
+                Program.toast.RunToast($"Camera Off");
+            }
+            else if (cameraShutter == 1048576)
+            {
+                Program.acpi.DeviceSet(AsusACPI.CameraShutter, 4, "CameraShutter");
                 Program.toast.RunToast($"Camera On");
             }
             else if (cameraShutter == 262144)

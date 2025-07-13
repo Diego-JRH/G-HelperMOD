@@ -1,6 +1,9 @@
 ﻿using GHelper.Peripherals.Mouse;
 using GHelper.Peripherals.Mouse.Models;
+using HidSharp;
+using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace GHelper.Peripherals
 {
@@ -183,6 +186,7 @@ namespace GHelper.Peripherals
         public static void DetectAllAsusMice()
         {
             //Add one line for every supported mouse class here to support them.
+            DedectOmniMouse();
             DetectMouse(new ChakramX());
             DetectMouse(new ChakramXWired());
             DetectMouse(new GladiusIIIAimpoint());
@@ -208,7 +212,7 @@ namespace GHelper.Peripherals
             DetectMouse(new GladiusIIIAimpointEva2Wired());
             DetectMouse(new HarpeAceAimLabEdition());
             DetectMouse(new HarpeAceAimLabEditionWired());
-            DetectMouse(new HarpeAceAimLabEditionOmni());
+            DetectMouse(new HarpeAceMiniWired());
             DetectMouse(new TUFM3());
             DetectMouse(new TUFM3GenII());
             DetectMouse(new TUFM5());
@@ -229,6 +233,46 @@ namespace GHelper.Peripherals
             DetectMouse(new TXGamingMini());
             DetectMouse(new TXGamingMiniWired());
             DetectMouse(new Pugio());
+        }
+
+        public static void DedectOmniMouse()
+        {
+            try
+            {
+                var device = DeviceList.Local.GetHidDevices(0x0B05, 0x1ACE).FirstOrDefault(x => x.DevicePath.Contains("mi_02&col03"));
+                if (device is null) return;
+
+                var config = new OpenConfiguration();
+                config.SetOption(OpenOption.Interruptible, true);
+                config.SetOption(OpenOption.Exclusive, false);
+                config.SetOption(OpenOption.Priority, 10);
+
+                using (var stream = device.Open(config))
+                {
+                    var response = new byte[64];
+                    stream.Write(new byte[] { 0x03, 0x12, 0x12, 0x02 });
+                    stream.Read(response);
+                    
+                    Logger.WriteLine("Omni Mouse ID: " + BitConverter.ToString(response));
+                    var signatureBytes = response.Skip(5).Take(12).ToArray();
+                    Logger.WriteLine("Signature: " + BitConverter.ToString(signatureBytes) + " = " + Encoding.ASCII.GetString(signatureBytes));
+
+                    var signature = (response[5], response[6]);
+                    AsusMouse omniMouse = signature switch
+                    {
+                        (0x42, 0x32) => new HarpeAceMiniOmni(), // B24082550833
+                        (0x52, 0x39) => new KerisWirelssAimpointOmni(), //R90518300572
+                        (0x30, 0x32) => new KerisAceIIOmni(), // 024031316969
+                        _ => new HarpeAceAimLabEditionOmni()
+                    };
+                    DetectMouse(omniMouse);
+                    stream.Close();
+                }
+            }
+            catch
+            {
+                return;
+            }
         }
 
         public static void DetectMouse(AsusMouse am)

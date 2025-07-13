@@ -122,12 +122,19 @@ namespace GHelper
                 {
                     Dictionary<string, string> list = new();
 
-                    foreach (ManagementObject obj in objCollection)
-                    {
-                        if (obj["DeviceID"] is not null && obj["DriverVersion"] is not null)
-                            list[obj["DeviceID"].ToString()] = obj["DriverVersion"].ToString();
-                    }
-
+                    foreach (ManagementObject obj in objCollection) if (obj["DriverVersion"] is not null)
+                        {
+                            if (obj["DeviceID"] is not null)
+                            {
+                                list[obj["DeviceID"].ToString()] = obj["DriverVersion"].ToString();
+                            }
+                            if (obj["DeviceName"] is not null)
+                            {
+                                var deviceName = obj["DeviceName"].ToString();
+                                if (deviceName.Contains("DolbyAPO SWC")) list["Dolby"] = obj["DriverVersion"].ToString();
+                                if (deviceName.Contains("Fortemedia Audio")) list["Fortemedia"] = obj["DriverVersion"].ToString();
+                            }
+                        }
                     return list;
                 }
             }
@@ -272,7 +279,7 @@ namespace GHelper
                     var groups = data.GetProperty("Result").GetProperty("Obj");
 
 
-                    List<string> skipList = new() { "Armoury Crate & Aura Creator Installer", "MyASUS", "ASUS Smart Display Control", "Aura Wallpaper", "Virtual Pet", "ROG Font V1.5" };
+                    List<string> skipList = new() { "Armoury Crate & Aura Creator Installer", "MyASUS", "ASUS Smart Display Control", "Aura Wallpaper", "Virtual Pet", "Virtual Pet- Ultimate Edition", "ROG Font V1.5", "Armoury Crate Control Interface" };
                     List<DriverDownload> drivers = new();
 
                     for (int i = 0; i < groups.GetArrayLength(); i++)
@@ -333,10 +340,9 @@ namespace GHelper
                                     Logger.WriteLine(driver.title + " " + deviceID + " " + driver.version + " vs " + localVersion + " = " + newer);
                                     tip = "Download: " + driver.version + "\n" + "Installed: " + localVersion;
                                 }
-
                             }
 
-                        if (type == 1)
+                        if (type == 1 && !driver.title.Contains("Firmware"))
                         {
                             newer = Int32.Parse(driver.version) > Int32.Parse(bios) ? 1 : -1;
                             tip = "Download: " + driver.version + "\n" + "Installed: " + bios;
