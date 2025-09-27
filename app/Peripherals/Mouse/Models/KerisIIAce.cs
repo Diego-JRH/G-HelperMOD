@@ -18,7 +18,7 @@
 
         public override string GetDisplayName()
         {
-            return "ROG Keris II Ace";
+            return "ROG Keris II Ace (Wired)";
         }
 
 
@@ -28,9 +28,7 @@
                 PollingRate.PR125Hz,
                 PollingRate.PR250Hz,
                 PollingRate.PR500Hz,
-                PollingRate.PR1000Hz,
-                PollingRate.PR2000Hz,
-                PollingRate.PR4000Hz
+                PollingRate.PR1000Hz
             };
         }
 
@@ -67,7 +65,8 @@
                 || lightingMode == LightingMode.Breathing
                 || lightingMode == LightingMode.ColorCycle
                 || lightingMode == LightingMode.BatteryState
-                || lightingMode == LightingMode.React;
+                || lightingMode == LightingMode.React
+                || lightingMode == LightingMode.Off;
         }
 
         public override bool HasAutoPowerOff()
@@ -99,19 +98,6 @@
         {
             return 5;
         }
-
-        protected override PollingRate ParsePollingRate(byte[] packet)
-        {
-            if (packet[1] == 0x12 && packet[2] == 0x04 && packet[3] == 0x00)
-            {
-                if ((int)packet[13] > 7)
-                    return (PollingRate)packet[13] - 96;
-                return (PollingRate)packet[13];
-            }
-
-            return PollingRate.PR125Hz;
-        }
-
     }
 
     public class KerisAceIIOmni : KerisIIAceWired
@@ -122,7 +108,7 @@
 
         public override string GetDisplayName()
         {
-            return "Keris Ace II (OMNI)";
+            return "ROG Keris II Ace (OMNI)";
         }
 
         public override int USBPacketSize()
@@ -130,5 +116,4 @@
             return 64;
         }
     }
-
 }
