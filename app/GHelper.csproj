@@ -16,7 +16,7 @@
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 
-    <AssemblyVersion>0.231.2</AssemblyVersion>
+    <AssemblyVersion>0.231.3</AssemblyVersion>
 
   </PropertyGroup>
 
