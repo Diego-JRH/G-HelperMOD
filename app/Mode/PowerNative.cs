@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using Microsoft.Win32;
+using System.Runtime.InteropServices;
 
 namespace GHelper.Mode
 {
@@ -63,6 +64,9 @@ namespace GHelper.Mode
         private static Guid GUID_SYSTEM_BUTTON_SUBGROUP = new Guid("4f971e89-eebd-4455-a8de-9e59040e7347");
         private static Guid GUID_LIDACTION = new Guid("5CA83367-6E45-459F-A27B-476B1D01C936");
 
+        private static Guid GUID_SUB_PCIEXPRESS = new Guid("501a4d13-42af-4429-9fd1-a8218c268e20");
+        private static Guid GUID_PCI_EXPRESS_ASPM = new Guid("ee12f906-d277-404b-b6da-e5fa1a576df5");
+
         [DllImportAttribute("powrprof.dll", EntryPoint = "PowerGetActualOverlayScheme")]
         public static extern uint PowerGetActualOverlayScheme(out Guid ActualOverlayGuid);
 
@@ -75,13 +79,14 @@ namespace GHelper.Mode
         const string POWER_SILENT = "961cc777-2547-4f9d-8174-7d86181b8a7a";
         const string POWER_BALANCED = "00000000-0000-0000-0000-000000000000";
         const string POWER_TURBO = "ded574b5-45a0-4f42-8737-46345c09c238";
-        const string POWER_BETTERPERFORMANCE = "ded574b5-45a0-4f42-8737-46345c09c238";
+
+        const string PLAN_BALANCED = "381b4222-f694-41f0-9685-ff5bb260df2e";
+        const string PLAN_HIGH_PERFORMANCE = "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c";
 
         static List<string> overlays = new() {
                 POWER_BALANCED,
                 POWER_TURBO,
                 POWER_SILENT,
-                POWER_BETTERPERFORMANCE
             };
 
         public static Dictionary<string, string> powerModes = new Dictionary<string, string>
@@ -89,6 +94,7 @@ namespace GHelper.Mode
                 { POWER_SILENT, "Best Power Efficiency" },
                 { POWER_BALANCED, "Balanced" },
                 { POWER_TURBO, "Best Performance" },
+                { PLAN_HIGH_PERFORMANCE, "High Performance Plan"},
             };
         static Guid GetActiveScheme()
         {
@@ -141,6 +147,7 @@ namespace GHelper.Mode
 
         public static string GetPowerMode()
         {
+            if (GetActiveScheme().ToString() == PLAN_HIGH_PERFORMANCE) return PLAN_HIGH_PERFORMANCE;
             PowerGetEffectiveOverlayScheme(out Guid activeScheme);
             return activeScheme.ToString();
         }
@@ -148,12 +155,23 @@ namespace GHelper.Mode
         public static void SetPowerMode(string scheme)
         {
 
+            if (scheme == PLAN_HIGH_PERFORMANCE)
+            {
+                SetPowerPlan(scheme);
+                return;
+            }
+            else
+            {
+                // Power plan from config or defaulting to balanced
+                SetPowerPlan(AppConfig.GetModeString("scheme"));
+            }
+
             if (!overlays.Contains(scheme)) return;
 
             Guid guidScheme = new Guid(scheme);
 
             uint status = PowerGetEffectiveOverlayScheme(out Guid activeScheme);
-            
+
             if (GetBatterySaverStatus())
             {
                 Logger.WriteLine("Battery Saver detected");
@@ -168,26 +186,17 @@ namespace GHelper.Mode
 
         }
 
-        public static void SetBalancedPowerPlan()
-        {
-            Guid activeSchemeGuid = GetActiveScheme();
-            string balanced = "381b4222-f694-41f0-9685-ff5bb260df2e";
-
-            if (activeSchemeGuid.ToString() != balanced && !AppConfig.Is("skip_power_plan"))
-            {
-                Logger.WriteLine($"Changing power plan from {activeSchemeGuid.ToString()} to Balanced");
-                SetPowerPlan(balanced);
-            }
-        }
-
         public static void SetPowerPlan(string scheme)
         {
             // Skipping power modes
             if (overlays.Contains(scheme)) return;
 
-            Guid guidScheme = new Guid(scheme);
-            uint status = PowerSetActiveScheme(IntPtr.Zero, guidScheme);
-            Logger.WriteLine("Power Plan " + scheme + ":" + (status == 0 ? "OK" : status));
+            if (scheme is null) scheme = PLAN_BALANCED;
+            var activeScheme = GetActiveScheme().ToString();
+            if (activeScheme == scheme) return;
+
+            uint status = PowerSetActiveScheme(IntPtr.Zero, new Guid(scheme));
+            Logger.WriteLine($"Power Plan {activeScheme} -> {scheme} :" + (status == 0 ? "OK" : status));
         }
 
         public static string GetDefaultPowerMode(int mode)
@@ -206,6 +215,34 @@ namespace GHelper.Mode
         public static void SetPowerMode(int mode)
         {
             SetPowerMode(GetDefaultPowerMode(mode));
+        }
+
+        public static int GetASPM()
+        {
+            Guid activeSchemeGuid = GetActiveScheme();
+            IntPtr activeIndex;
+
+            PowerReadACValueIndex(IntPtr.Zero,
+                    activeSchemeGuid,
+                    GUID_SUB_PCIEXPRESS,
+                    GUID_PCI_EXPRESS_ASPM, out activeIndex);
+
+            return activeIndex.ToInt32();
+        }
+
+        public static void SetASPM(int status = 0)
+        {
+            Guid activeSchemeGuid = GetActiveScheme();
+
+            var hrAC = PowerWriteACValueIndex(
+                IntPtr.Zero,
+                activeSchemeGuid,
+                GUID_SUB_PCIEXPRESS,
+                GUID_PCI_EXPRESS_ASPM,
+                status);
+
+            PowerSetActiveScheme(IntPtr.Zero, activeSchemeGuid);
+            Logger.WriteLine("Changed ASPM to " + status);
         }
 
         public static int GetLidAction(bool ac)
@@ -327,17 +364,24 @@ namespace GHelper.Mode
 
         public static bool GetBatterySaverStatus()
         {
-            SystemPowerStatus sps = new SystemPowerStatus();
             try
             {
-                GetSystemPowerStatus(sps);
-                return (sps.SystemStatusFlag > 0);
-            } catch (Exception ex)
+                var status = Registry.GetValue(@"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Power", "EnergySaverState", null);
+                if (status == null)
+                {
+                    SystemPowerStatus sps = new SystemPowerStatus();
+                    GetSystemPowerStatus(sps);
+                    return (sps.SystemStatusFlag > 0);
+                }
+                return (int)status == 1;
+            }
+            catch (Exception e)
             {
+                Logger.WriteLine("Can't check EnergySaverState" + e.Message);
                 return false;
             }
-
         }
+
 
     }
 }

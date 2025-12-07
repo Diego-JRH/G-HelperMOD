@@ -108,11 +108,11 @@ namespace GHelper.Helpers
             }
         }
 
-        public static void StartEnableService(string serviceName)
+        public static void StartEnableService(string serviceName, bool automatic = true)
         {
             try
             {
-                string script = $"Set-Service -Name \"{serviceName}\" -Status running -StartupType Automatic";
+                string script = $"Set-Service -Name \"{serviceName}\" -Status running" + (automatic? " -StartupType Automatic":"");
                 Logger.WriteLine(script);
                 RunCMD("powershell", script);
             }
@@ -122,7 +122,7 @@ namespace GHelper.Helpers
             }
         }
 
-        public static string RunCMD(string name, string args)
+        public static string RunCMD(string name, string args, string? directory = null)
         {
             var cmd = new Process();
             cmd.StartInfo.UseShellExecute = false;
@@ -131,12 +131,15 @@ namespace GHelper.Helpers
             cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             cmd.StartInfo.FileName = name;
             cmd.StartInfo.Arguments = args;
+            if (directory != null) cmd.StartInfo.WorkingDirectory = directory;
             cmd.Start();
 
-            Logger.WriteLine(name + " " + args);
+
+            var watch = Stopwatch.StartNew();
             string result = cmd.StandardOutput.ReadToEnd().Replace(Environment.NewLine, " ").Trim(' ');
-            Logger.WriteLine(result);
-            
+            watch.Stop();
+            Logger.WriteLine(name + " " + args);
+            Logger.WriteLine(watch.ElapsedMilliseconds + " ms: " + result);
             cmd.WaitForExit();
 
             return result;

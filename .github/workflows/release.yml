@@ -13,18 +13,18 @@ jobs:
   release:
     runs-on: windows-2022
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup dotnet
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: |
           8.0.x
     - name: Publish
       run: |
         dotnet publish app/GHelper.sln --configuration Release --runtime win-x64 -p:PublishSingleFile=true --no-self-contained
-        powershell Compress-Archive app/bin/x64/Release/net8.0-windows/win-x64/publish/GHelper.exe GHelper.zip
+        powershell Compress-Archive app/bin/x64/Release/net8.0-windows/win-x64/publish/* GHelper.zip
     - name: Upload
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        gh release upload ${{ github.ref_name }} app/bin/x64/Release/net8.0-windows/win-x64/publish/GHelper.exe GHelper.zip
+        gh release upload ${{ github.ref_name }} GHelper.zip

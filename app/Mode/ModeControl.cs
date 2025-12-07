@@ -12,6 +12,7 @@ namespace GHelper.Mode
 
         private static bool customFans = false;
         private static int customPower = 0;
+        private static bool customTemp = false;
 
         private int _cpuUV = 0;
         private int _igpuUV = 0;
@@ -82,6 +83,8 @@ namespace GHelper.Mode
 
                 customFans = false;
                 customPower = 0;
+                customTemp = false;
+
                 SetModeLabel();
 
                 // Workaround for not properly resetting limits on G14 2024
@@ -91,6 +94,7 @@ namespace GHelper.Mode
                     await Task.Delay(TimeSpan.FromMilliseconds(1500));
                 }
 
+                if (AppConfig.Is("status_mode")) Program.acpi.DeviceSet(AsusACPI.StatusMode, [0x00, Modes.GetBase(mode) == AsusACPI.PerformanceSilent ? (byte)0x02 : (byte)0x03], "StatusMode");
                 int status = Program.acpi.DeviceSet(AsusACPI.PerformanceMode, AppConfig.IsManualModeRequired() ? AsusACPI.PerformanceManual : Modes.GetBase(mode), "Mode");
                 // Vivobook fallback
                 if (status != 1) Program.acpi.SetVivoMode(Modes.GetBase(mode));
@@ -112,17 +116,13 @@ namespace GHelper.Mode
 
             if (!AppConfig.Is("skip_powermode"))
             {
-                // Power plan from config or defaulting to balanced
-                if (AppConfig.GetModeString("scheme") is not null)
-                    PowerNative.SetPowerPlan(AppConfig.GetModeString("scheme"));
-                else
-                    PowerNative.SetBalancedPowerPlan();
-
                 // Windows power mode
                 if (AppConfig.GetModeString("powermode") is not null)
                     PowerNative.SetPowerMode(AppConfig.GetModeString("powermode"));
                 else
                     PowerNative.SetPowerMode(Modes.GetBase(mode));
+
+                if (AppConfig.Is("aspm") && PowerNative.GetASPM() > 0) PowerNative.SetASPM(0);
             }
 
             // CPU Boost setting override
@@ -229,7 +229,7 @@ namespace GHelper.Mode
             bool applyPower = AppConfig.IsMode("auto_apply_power");
             bool applyFans = AppConfig.IsMode("auto_apply");
 
-            if (applyPower && !applyFans && (AppConfig.IsFanRequired() || AppConfig.IsManualModeRequired()))
+            if (applyPower && !applyFans && AppConfig.IsFanRequired())
             {
                 AutoFans(true);
                 Thread.Sleep(500);
@@ -394,10 +394,17 @@ namespace GHelper.Mode
 
         public void SetCPUTemp(int? cpuTemp, bool init = false)
         {
+            if (cpuTemp == RyzenControl.MaxTemp && customTemp)
+            {
+                cpuTemp = RyzenControl.DefaultTemp;
+                Logger.WriteLine($"Custom CPU Temp reset");
+            }
+
             if (cpuTemp >= RyzenControl.MinTemp && cpuTemp < RyzenControl.MaxTemp)
             {
                 var resultCPU = SendCommand.set_tctl_temp((uint)cpuTemp);
                 if (init) Logger.WriteLine($"CPU Temp: {cpuTemp} {resultCPU}");
+                if (resultCPU == Smu.Status.OK) customTemp = cpuTemp != RyzenControl.DefaultTemp;
             }
         }
 
@@ -463,6 +470,12 @@ namespace GHelper.Mode
 
             if (AppConfig.IsMode("auto_uv")) SetRyzen();
             else ResetRyzen();
+        }
+
+        public void ShutdownReset()
+        {
+            if (!AppConfig.IsShutdownReset()) return;
+            Program.acpi.DeviceSet(AsusACPI.PerformanceMode,AsusACPI.PerformanceBalanced, "Mode Reset");
         }
 
     }

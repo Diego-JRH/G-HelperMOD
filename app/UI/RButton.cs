@@ -52,16 +52,6 @@ namespace GHelper.UI
             }
         }
 
-        private bool badge = false;
-        public bool Badge
-        {
-            get { return badge; }
-            set
-            {
-                badge = value;
-            }
-        }
-
         public RButton()
         {
             DoubleBuffered = true;
@@ -107,15 +97,6 @@ namespace GHelper.UI
                 Region = new Region(pathSurface);
                 pevent.Graphics.DrawPath(penSurface, pathSurface);
                 pevent.Graphics.DrawPath(penBorder, pathBorder);
-            }
-
-            if (badge)
-            {
-                using (Brush brush = new SolidBrush(borderColor))
-                {
-                    var radius = ratio * 10;
-                    pevent.Graphics.FillEllipse(brush, rectSurface.Width - rectSurface.Height / 2 -  radius, rectSurface.Height / 2 - radius, radius + radius, radius + radius);
-                }
             }
 
             if (!Enabled && ForeColor != SystemColors.ControlText)

@@ -2,6 +2,7 @@
 using GHelper.Gpu.NVidia;
 using GHelper.Helpers;
 using GHelper.USB;
+using Microsoft.Win32;
 using System.Diagnostics;
 
 namespace GHelper.Gpu
@@ -9,7 +10,6 @@ namespace GHelper.Gpu
     public class GPUModeControl
     {
         SettingsForm settings;
-        ScreenControl screenControl = new ScreenControl();
 
         public static int gpuMode;
         public static bool? gpuExists = null;
@@ -24,7 +24,7 @@ namespace GHelper.Gpu
         {
             if (AppConfig.NoGpu())
             {
-                settings.HideGPUModes(false); 
+                settings.HideGPUModes(false);
                 return;
             }
 
@@ -118,7 +118,7 @@ namespace GHelper.Gpu
             else if (GPUMode == AsusACPI.GPUModeEco)
             {
                 settings.VisualiseGPUMode(GPUMode);
-                SetGPUEco(1, true);
+                SetGPUEco(1);
                 changed = true;
             }
             else if (GPUMode == AsusACPI.GPUModeStandard)
@@ -143,7 +143,7 @@ namespace GHelper.Gpu
 
 
 
-        public void SetGPUEco(int eco, bool hardWay = false)
+        public void SetGPUEco(int eco)
         {
 
             settings.LockGPUModes();
@@ -156,33 +156,40 @@ namespace GHelper.Gpu
                 if (eco == 1)
                 {
                     HardwareControl.KillGPUApps();
+                    if (AppConfig.IsNVPlatform()) NvidiaGpuControl.StopNVService();
                 }
 
                 Logger.WriteLine($"Running eco command {eco}");
 
-                status = Program.acpi.SetGPUEco(eco);
-
-                if (status == 0 && eco == 1 && hardWay) RestartGPU();
-
-                await Task.Delay(TimeSpan.FromMilliseconds(AppConfig.Get("refresh_delay", 500)));
-
-                settings.Invoke(delegate
+                try
                 {
-                    InitGPUMode();
-                    screenControl.AutoScreen();
-                });
 
-                if (eco == 0)
-                {
-                    await Task.Delay(TimeSpan.FromMilliseconds(3000));
-                    HardwareControl.RecreateGpuControl();
-                    Program.modeControl.SetGPUClocks(false);
+                    status = Program.acpi.SetGPUEco(eco);
+                    await Task.Delay(TimeSpan.FromMilliseconds(AppConfig.Get("refresh_delay", 500)));
+
+                    settings.Invoke(delegate
+                    {
+                        InitGPUMode();
+                        ScreenControl.AutoScreen();
+                    });
+
+                    if (eco == 0)
+                    {
+                        if (AppConfig.IsNVPlatform()) NvidiaGpuControl.RestartNVService();
+                        await Task.Delay(TimeSpan.FromMilliseconds(3000));
+                        HardwareControl.RecreateGpuControl();
+                        Program.modeControl.SetGPUClocks(false);
+                    }
+
+                    if (AppConfig.Is("mode_reapply"))
+                    {
+                        await Task.Delay(TimeSpan.FromMilliseconds(3000));
+                        Program.modeControl.AutoPerformance();
+                    }
                 }
-
-                if (AppConfig.Is("mode_reapply"))
+                catch (Exception ex)
                 {
-                    await Task.Delay(TimeSpan.FromMilliseconds(3000));
-                    Program.modeControl.AutoPerformance();
+                    Logger.WriteLine("Error setting GPU Eco: " + ex.Message);
                 }
 
             });
@@ -205,11 +212,11 @@ namespace GHelper.Gpu
 
         }
 
-        public bool AutoGPUMode(bool optimized = false)
+        public bool AutoGPUMode(bool optimized = false, int delay = 0)
         {
 
             bool GpuAuto = AppConfig.Is("gpu_auto");
-            bool ForceGPU = AppConfig.IsForceSetGPUMode();
+            bool ForceGPU = AppConfig.IsForceSetGPUMode() && !GpuAuto;
 
             int GpuMode = AppConfig.Get("gpu_mode");
 
@@ -229,6 +236,7 @@ namespace GHelper.Gpu
                 if (eco == 1)
                     if ((GpuAuto && IsPlugged()) || (ForceGPU && GpuMode == AsusACPI.GPUModeStandard))
                     {
+                        if (delay > 0) Thread.Sleep(delay);
                         SetGPUEco(0);
                         return true;
                     }
@@ -243,46 +251,13 @@ namespace GHelper.Gpu
                             if (dialogResult == DialogResult.No) return false;
                         }
 
+                        if (delay > 0) Thread.Sleep(delay);
                         SetGPUEco(1);
                         return true;
                     }
             }
 
             return false;
-
-        }
-
-
-        public void RestartGPU(bool confirm = true)
-        {
-            if (HardwareControl.GpuControl is null) return;
-            if (!HardwareControl.GpuControl!.IsNvidia) return;
-
-            if (confirm)
-            {
-                DialogResult dialogResult = MessageBox.Show(Properties.Strings.RestartGPU, Properties.Strings.EcoMode, MessageBoxButtons.YesNo);
-                if (dialogResult == DialogResult.No) return;
-            }
-
-            ProcessHelper.RunAsAdmin("gpurestart");
-
-            if (!ProcessHelper.IsUserAdministrator()) return;
-
-            Logger.WriteLine("Trying to restart dGPU");
-
-            Task.Run(async () =>
-            {
-                settings.LockGPUModes("Restarting GPU ...");
-
-                var nvControl = (NvidiaGpuControl)HardwareControl.GpuControl;
-                bool status = nvControl.RestartGPU();
-
-                settings.Invoke(delegate
-                {
-                    //labelTipGPU.Text = status ? "GPU Restarted, you can try Eco mode again" : "Failed to restart GPU"; TODO
-                    InitGPUMode();
-                });
-            });
 
         }
 
@@ -359,14 +334,39 @@ namespace GHelper.Gpu
             }
         }
 
+        public static bool IsHibernationEnabled()
+        {
+            try
+            {
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Power"))
+                {
+                    if (key != null)
+                    {
+                        object value = key.GetValue("HibernateEnabled");
+                        if (value is int intValue)
+                        {
+                            return intValue != 0;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine("Error checking hibernation status: " + ex.Message);
+            }
+            return true;
+        }
+
+
         // Manually forcing standard mode on shutdown/hibernate for some exotic cases
         // https://github.com/seerge/g-helper/pull/855 
-        public void StandardModeFix()
+        public void StandardModeFix(bool hibernate = false)
         {
             if (!AppConfig.IsGPUFix()) return; // No config entry
             if (Program.acpi.DeviceGet(AsusACPI.GPUMux) == 0) return; // Ultimate mode
+            if (hibernate && !IsHibernationEnabled()) return;
 
-            Logger.WriteLine("Forcing Standard Mode on shutdown / hibernation");
+            Logger.WriteLine("Forcing Standard Mode on " + (hibernate ? "hibernation" : "shutdown"));
             Program.acpi.SetGPUEco(0);
         }
 

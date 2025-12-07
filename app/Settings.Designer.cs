@@ -51,7 +51,7 @@ namespace GHelper
             labelBatteryTitle = new Label();
             panelFooter = new Panel();
             tableButtons = new TableLayoutPanel();
-            buttonDonate = new RButton();
+            buttonDonate = new RBadgeButton();
             buttonQuit = new RButton();
             buttonUpdates = new RButton();
             checkStartup = new CheckBox();
@@ -95,7 +95,7 @@ namespace GHelper
             pictureScreen = new PictureBox();
             labelSreen = new Label();
             panelKeyboard = new Panel();
-            labelDynamicLighting = new Label();
+            labelBacklight = new Label();
             tableLayoutKeyboard = new TableLayoutPanel();
             buttonKeyboard = new RButton();
             panelColor = new Panel();
@@ -114,9 +114,6 @@ namespace GHelper
             buttonPeripheral3 = new RButton();
             buttonPeripheral2 = new RButton();
             buttonPeripheral1 = new RButton();
-            panelPeripheralsTile = new Panel();
-            picturePeripherals = new PictureBox();
-            labelPeripherals = new Label();
             panelAlly = new Panel();
             tableLayoutAlly = new TableLayoutPanel();
             buttonController = new RButton();
@@ -138,6 +135,7 @@ namespace GHelper
             pictureGamma = new PictureBox();
             labelGammaTitle = new Label();
             panelVersion = new Panel();
+            buttonEnergySaver = new RButton();
             labelVersion = new Label();
             panelMatrix.SuspendLayout();
             panelMatrixAuto.SuspendLayout();
@@ -172,8 +170,6 @@ namespace GHelper
             panelStartup.SuspendLayout();
             panelPeripherals.SuspendLayout();
             tableLayoutPeripherals.SuspendLayout();
-            panelPeripheralsTile.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)picturePeripherals).BeginInit();
             panelAlly.SuspendLayout();
             tableLayoutAlly.SuspendLayout();
             panelAllyTitle.SuspendLayout();
@@ -374,11 +370,11 @@ namespace GHelper
             panelBattery.Controls.Add(sliderBattery);
             panelBattery.Controls.Add(panelBatteryTitle);
             panelBattery.Dock = DockStyle.Top;
-            panelBattery.Location = new Point(11, 1765);
+            panelBattery.Location = new Point(11, 1683);
             panelBattery.Margin = new Padding(0);
             panelBattery.Name = "panelBattery";
-            panelBattery.Padding = new Padding(20, 20, 20, 0);
-            panelBattery.Size = new Size(827, 109);
+            panelBattery.Padding = new Padding(20, 15, 20, 0);
+            panelBattery.Size = new Size(827, 104);
             panelBattery.TabIndex = 5;
             // 
             // buttonBatteryFull
@@ -392,7 +388,7 @@ namespace GHelper
             buttonBatteryFull.FlatStyle = FlatStyle.Flat;
             buttonBatteryFull.Font = new Font("Segoe UI", 7.125F, FontStyle.Bold);
             buttonBatteryFull.ForeColor = SystemColors.ControlDark;
-            buttonBatteryFull.Location = new Point(728, 67);
+            buttonBatteryFull.Location = new Point(728, 62);
             buttonBatteryFull.Margin = new Padding(0);
             buttonBatteryFull.Name = "buttonBatteryFull";
             buttonBatteryFull.Secondary = true;
@@ -404,7 +400,7 @@ namespace GHelper
             // sliderBattery
             // 
             sliderBattery.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            sliderBattery.Location = new Point(20, 65);
+            sliderBattery.Location = new Point(20, 60);
             sliderBattery.Margin = new Padding(4);
             sliderBattery.Max = 100;
             sliderBattery.Min = 40;
@@ -421,7 +417,7 @@ namespace GHelper
             panelBatteryTitle.Controls.Add(pictureBattery);
             panelBatteryTitle.Controls.Add(labelBatteryTitle);
             panelBatteryTitle.Dock = DockStyle.Top;
-            panelBatteryTitle.Location = new Point(20, 20);
+            panelBatteryTitle.Location = new Point(20, 15);
             panelBatteryTitle.Margin = new Padding(4);
             panelBatteryTitle.Name = "panelBatteryTitle";
             panelBatteryTitle.Padding = new Padding(0, 0, 0, 4);
@@ -466,7 +462,7 @@ namespace GHelper
             panelFooter.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             panelFooter.Controls.Add(tableButtons);
             panelFooter.Dock = DockStyle.Top;
-            panelFooter.Location = new Point(11, 1974);
+            panelFooter.Location = new Point(11, 1887);
             panelFooter.Margin = new Padding(0);
             panelFooter.Name = "panelFooter";
             panelFooter.Padding = new Padding(20, 10, 20, 20);
@@ -497,6 +493,7 @@ namespace GHelper
             // 
             buttonDonate.Activated = false;
             buttonDonate.BackColor = SystemColors.ControlLight;
+            buttonDonate.Badge = 0;
             buttonDonate.BorderColor = Color.Transparent;
             buttonDonate.BorderRadius = 2;
             buttonDonate.Dock = DockStyle.Top;
@@ -1228,10 +1225,10 @@ namespace GHelper
             // labelMidFan
             // 
             labelMidFan.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            labelMidFan.Location = new Point(532, -3);
+            labelMidFan.Location = new Point(500, 0);
             labelMidFan.Margin = new Padding(8, 0, 8, 0);
             labelMidFan.Name = "labelMidFan";
-            labelMidFan.Size = new Size(253, 35);
+            labelMidFan.Size = new Size(285, 35);
             labelMidFan.TabIndex = 28;
             labelMidFan.Text = "         ";
             labelMidFan.TextAlign = ContentAlignment.TopRight;
@@ -1263,32 +1260,30 @@ namespace GHelper
             panelKeyboard.AccessibleRole = AccessibleRole.Grouping;
             panelKeyboard.AutoSize = true;
             panelKeyboard.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            panelKeyboard.Controls.Add(labelDynamicLighting);
+            panelKeyboard.Controls.Add(labelBacklight);
             panelKeyboard.Controls.Add(tableLayoutKeyboard);
             panelKeyboard.Controls.Add(panelKeyboardTitle);
             panelKeyboard.Dock = DockStyle.Top;
             panelKeyboard.Location = new Point(11, 1394);
             panelKeyboard.Margin = new Padding(0);
             panelKeyboard.Name = "panelKeyboard";
-            panelKeyboard.Padding = new Padding(20);
-            panelKeyboard.Size = new Size(827, 172);
+            panelKeyboard.Padding = new Padding(20, 20, 20, 0);
+            panelKeyboard.Size = new Size(827, 146);
             panelKeyboard.TabIndex = 4;
             panelKeyboard.TabStop = true;
             // 
-            // labelDynamicLighting
+            // labelBacklight
             // 
-            labelDynamicLighting.Cursor = Cursors.Hand;
-            labelDynamicLighting.Dock = DockStyle.Top;
-            labelDynamicLighting.Font = new Font("Segoe UI", 9F);
-            labelDynamicLighting.ForeColor = SystemColors.GrayText;
-            labelDynamicLighting.Location = new Point(20, 112);
-            labelDynamicLighting.Margin = new Padding(4, 0, 4, 0);
-            labelDynamicLighting.Name = "labelDynamicLighting";
-            labelDynamicLighting.Padding = new Padding(4);
-            labelDynamicLighting.Size = new Size(787, 40);
-            labelDynamicLighting.TabIndex = 43;
-            labelDynamicLighting.Text = "Please disable Windows > Dynamic Lighting";
-            labelDynamicLighting.Visible = false;
+            labelBacklight.Cursor = Cursors.Hand;
+            labelBacklight.Dock = DockStyle.Top;
+            labelBacklight.Font = new Font("Segoe UI", 9F);
+            labelBacklight.ForeColor = SystemColors.GrayText;
+            labelBacklight.Location = new Point(20, 112);
+            labelBacklight.Margin = new Padding(4, 0, 4, 0);
+            labelBacklight.Name = "labelBacklight";
+            labelBacklight.Padding = new Padding(4, 0, 4, 0);
+            labelBacklight.Size = new Size(787, 34);
+            labelBacklight.TabIndex = 43;
             // 
             // tableLayoutKeyboard
             // 
@@ -1466,7 +1461,7 @@ namespace GHelper
             panelStartup.Controls.Add(labelCharge);
             panelStartup.Controls.Add(checkStartup);
             panelStartup.Dock = DockStyle.Top;
-            panelStartup.Location = new Point(11, 1874);
+            panelStartup.Location = new Point(11, 1787);
             panelStartup.Margin = new Padding(0);
             panelStartup.Name = "panelStartup";
             panelStartup.Padding = new Padding(20, 0, 20, 0);
@@ -1490,13 +1485,12 @@ namespace GHelper
             panelPeripherals.AutoSize = true;
             panelPeripherals.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             panelPeripherals.Controls.Add(tableLayoutPeripherals);
-            panelPeripherals.Controls.Add(panelPeripheralsTile);
             panelPeripherals.Dock = DockStyle.Top;
-            panelPeripherals.Location = new Point(11, 1566);
+            panelPeripherals.Location = new Point(11, 1540);
             panelPeripherals.Margin = new Padding(0);
             panelPeripherals.Name = "panelPeripherals";
-            panelPeripherals.Padding = new Padding(20, 20, 20, 11);
-            panelPeripherals.Size = new Size(827, 199);
+            panelPeripherals.Padding = new Padding(20, 5, 20, 10);
+            panelPeripherals.Size = new Size(827, 143);
             panelPeripherals.TabIndex = 4;
             panelPeripherals.Visible = false;
             // 
@@ -1513,7 +1507,7 @@ namespace GHelper
             tableLayoutPeripherals.Controls.Add(buttonPeripheral2, 0, 0);
             tableLayoutPeripherals.Controls.Add(buttonPeripheral1, 0, 0);
             tableLayoutPeripherals.Dock = DockStyle.Top;
-            tableLayoutPeripherals.Location = new Point(20, 60);
+            tableLayoutPeripherals.Location = new Point(20, 5);
             tableLayoutPeripherals.Margin = new Padding(8, 4, 8, 4);
             tableLayoutPeripherals.Name = "tableLayoutPeripherals";
             tableLayoutPeripherals.RowCount = 1;
@@ -1592,39 +1586,6 @@ namespace GHelper
             buttonPeripheral1.Text = "Mouse 1";
             buttonPeripheral1.TextImageRelation = TextImageRelation.ImageBeforeText;
             buttonPeripheral1.UseVisualStyleBackColor = false;
-            // 
-            // panelPeripheralsTile
-            // 
-            panelPeripheralsTile.Controls.Add(picturePeripherals);
-            panelPeripheralsTile.Controls.Add(labelPeripherals);
-            panelPeripheralsTile.Dock = DockStyle.Top;
-            panelPeripheralsTile.Location = new Point(20, 20);
-            panelPeripheralsTile.Margin = new Padding(4);
-            panelPeripheralsTile.Name = "panelPeripheralsTile";
-            panelPeripheralsTile.Size = new Size(787, 40);
-            panelPeripheralsTile.TabIndex = 45;
-            // 
-            // picturePeripherals
-            // 
-            picturePeripherals.BackgroundImage = Properties.Resources.icons8_maus_48;
-            picturePeripherals.BackgroundImageLayout = ImageLayout.Zoom;
-            picturePeripherals.Location = new Point(8, 3);
-            picturePeripherals.Margin = new Padding(4);
-            picturePeripherals.Name = "picturePeripherals";
-            picturePeripherals.Size = new Size(32, 32);
-            picturePeripherals.TabIndex = 41;
-            picturePeripherals.TabStop = false;
-            // 
-            // labelPeripherals
-            // 
-            labelPeripherals.AutoSize = true;
-            labelPeripherals.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            labelPeripherals.Location = new Point(44, 0);
-            labelPeripherals.Margin = new Padding(8, 0, 8, 0);
-            labelPeripherals.Name = "labelPeripherals";
-            labelPeripherals.Size = new Size(141, 32);
-            labelPeripherals.TabIndex = 40;
-            labelPeripherals.Text = "Peripherals";
             // 
             // panelAlly
             // 
@@ -1949,14 +1910,36 @@ namespace GHelper
             // 
             panelVersion.AutoSize = true;
             panelVersion.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            panelVersion.Controls.Add(buttonEnergySaver);
             panelVersion.Controls.Add(labelVersion);
             panelVersion.Dock = DockStyle.Top;
-            panelVersion.Location = new Point(11, 1924);
+            panelVersion.Location = new Point(11, 1837);
             panelVersion.MinimumSize = new Size(0, 50);
             panelVersion.Name = "panelVersion";
-            panelVersion.Padding = new Padding(20, 5, 20, 5);
+            panelVersion.Padding = new Padding(20, 5, 24, 5);
             panelVersion.Size = new Size(827, 50);
             panelVersion.TabIndex = 10;
+            // 
+            // buttonEnergySaver
+            // 
+            buttonEnergySaver.Activated = false;
+            buttonEnergySaver.BackColor = SystemColors.ControlLight;
+            buttonEnergySaver.BorderColor = Color.Transparent;
+            buttonEnergySaver.BorderRadius = 2;
+            buttonEnergySaver.Dock = DockStyle.Right;
+            buttonEnergySaver.FlatAppearance.BorderSize = 0;
+            buttonEnergySaver.FlatStyle = FlatStyle.Flat;
+            buttonEnergySaver.Font = new Font("Segoe UI", 7.125F, FontStyle.Bold);
+            buttonEnergySaver.ForeColor = SystemColors.ControlDark;
+            buttonEnergySaver.ImageAlign = ContentAlignment.MiddleLeft;
+            buttonEnergySaver.Location = new Point(642, 5);
+            buttonEnergySaver.Margin = new Padding(0);
+            buttonEnergySaver.Name = "buttonEnergySaver";
+            buttonEnergySaver.Secondary = true;
+            buttonEnergySaver.Size = new Size(163, 40);
+            buttonEnergySaver.TabIndex = 39;
+            buttonEnergySaver.Text = "Energy Saver";
+            buttonEnergySaver.UseVisualStyleBackColor = false;
             // 
             // labelVersion
             // 
@@ -2052,9 +2035,6 @@ namespace GHelper
             panelPeripherals.ResumeLayout(false);
             panelPeripherals.PerformLayout();
             tableLayoutPeripherals.ResumeLayout(false);
-            panelPeripheralsTile.ResumeLayout(false);
-            panelPeripheralsTile.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)picturePeripherals).EndInit();
             panelAlly.ResumeLayout(false);
             panelAlly.PerformLayout();
             tableLayoutAlly.ResumeLayout(false);
@@ -2138,9 +2118,6 @@ namespace GHelper
         private TableLayoutPanel tableButtons;
         private Panel panelPeripherals;
         private TableLayoutPanel tableLayoutPeripherals;
-        private Panel panelPeripheralsTile;
-        private PictureBox picturePeripherals;
-        private Label labelPeripherals;
         private RButton buttonPeripheral2;
         private RButton buttonPeripheral3;
         private RButton buttonPeripheral1;
@@ -2177,9 +2154,10 @@ namespace GHelper
         private Label labelVisual;
         private RButton buttonFHD;
         private RButton buttonAutoTDP;
-        private Label labelDynamicLighting;
+        private Label labelBacklight;
         private Panel panelVersion;
         private Label labelVersion;
-        private RButton buttonDonate;
+        private RBadgeButton buttonDonate;
+        private RButton buttonEnergySaver;
     }
 }

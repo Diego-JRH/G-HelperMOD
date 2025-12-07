@@ -12,7 +12,6 @@ namespace GHelper
     public partial class Extra : RForm
     {
 
-        ScreenControl screenControl = new ScreenControl();
         ClamshellModeControl clamshellControl = new ClamshellModeControl();
 
         const string EMPTY = "--------------";
@@ -177,7 +176,7 @@ namespace GHelper
             numericBacklightPluggedTime.AccessibleName = Properties.Strings.BacklightTimeoutPlugged;
             numericBacklightTime.AccessibleName = Properties.Strings.BacklightTimeoutBattery;
 
-            comboKeyboardSpeed.AccessibleName = Properties.Strings.LaptopBacklight + " " +Properties.Strings.AnimationSpeed;
+            comboKeyboardSpeed.AccessibleName = Properties.Strings.LaptopBacklight + " " + Properties.Strings.AnimationSpeed;
             comboAPU.AccessibleName = Properties.Strings.LaptopBacklight + " " + Properties.Strings.AnimationSpeed;
 
             checkBoot.AccessibleName = Properties.Strings.Boot + " " + Properties.Strings.LaptopBacklight;
@@ -202,8 +201,17 @@ namespace GHelper
                 labelM1.Text = "FN+F2";
                 labelM2.Text = "FN+F3";
                 labelM3.Text = "FN+F4";
-                labelM4.Visible = comboM4.Visible = textM4.Visible = AppConfig.IsDUO();
+                labelM4.Visible = comboM4.Visible = textM4.Visible = AppConfig.IsM4Button();
                 labelFNF4.Visible = comboFNF4.Visible = textFNF4.Visible = false;
+            }
+
+            if (AppConfig.IsVivoZenPro())
+            {
+                labelM1.Visible = comboM1.Visible = textM1.Visible = false;
+                labelM2.Visible = comboM2.Visible = textM2.Visible = false;
+                labelM3.Visible = comboM3.Visible = textM3.Visible = false;
+                labelFNF4.Visible = comboFNF4.Visible = textFNF4.Visible = false;
+                labelM4.Text = "FN+F12";
             }
 
             if (AppConfig.MediaKeys())
@@ -362,6 +370,9 @@ namespace GHelper
                     checkBootBar.Visible = false;
                     checkSleepBar.Visible = false;
                     checkShutdownBar.Visible = false;
+
+                    labelBacklightKeyboard.Visible = false;
+                    checkBattery.Visible = false;
                 }
 
                 labelBacklightLid.Visible = false;
@@ -379,10 +390,21 @@ namespace GHelper
                 checkShutdownLogo.Visible = false;
             }
 
-            if (!AppConfig.IsBacklightZones())
+            if (AppConfig.IsZ13())
             {
-                labelBacklightKeyboard.Visible = false;
-                checkBattery.Visible = false;
+                labelBacklightBar.Visible = false;
+                checkAwakeBar.Visible = false;
+                checkBatteryBar.Visible = false;
+                checkBootBar.Visible = false;
+                checkSleepBar.Visible = false;
+                checkShutdownBar.Visible = false;
+
+                labelBacklightLid.Visible = false;
+                checkAwakeLid.Visible = false;
+                checkBatteryLid.Visible = false;
+                checkBootLid.Visible = false;
+                checkSleepLid.Visible = false;
+                checkShutdownLid.Visible = false;
             }
 
             //checkAutoToggleClamshellMode.Visible = clamshellControl.IsExternalDisplayConnected();
@@ -425,6 +447,11 @@ namespace GHelper
             checkStatusLed.Checked = (statusLed > 0);
             checkStatusLed.CheckedChanged += CheckLEDStatus_CheckedChanged;
 
+            var optimalBrightness = ScreenControl.GetOptimalBrightness();
+            checkOptimalBrightness.Visible = optimalBrightness >= 0;
+            checkOptimalBrightness.Checked = (optimalBrightness > 0);
+            checkOptimalBrightness.CheckedChanged += CheckOptimalBrightness_CheckedChanged;
+
 
             checkBWIcon.Checked = AppConfig.IsBWIcon();
             checkBWIcon.CheckedChanged += CheckBWIcon_CheckedChanged;
@@ -438,6 +465,11 @@ namespace GHelper
             checkGPUFix.Checked = AppConfig.IsGPUFix();
             checkGPUFix.CheckedChanged += CheckGPUFix_CheckedChanged;
 
+            checkNVPlatform.Visible = Program.acpi.IsNVidiaGPU();
+            checkNVPlatform.Checked = AppConfig.IsNVPlatform();
+            checkNVPlatform.CheckedChanged += CheckNVPlatform_CheckedChanged;
+
+
             checkPerKeyRGB.Visible = AppConfig.IsPossible4ZoneRGB();
             checkPerKeyRGB.Checked = AppConfig.Is("per_key_rgb");
             checkPerKeyRGB.CheckedChanged += CheckPerKeyRGB_CheckedChanged;
@@ -445,12 +477,21 @@ namespace GHelper
             toolTip.SetToolTip(checkAutoToggleClamshellMode, "Disable sleep on lid close when plugged in and external monitor is connected");
 
             InitCores();
-            InitVariBright();
             InitServices();
             InitHibernate();
 
             InitACPITesting();
 
+        }
+
+        private void CheckNVPlatform_CheckedChanged(object? sender, EventArgs e)
+        {
+            AppConfig.Set("nv_platform", (checkNVPlatform.Checked ? 1 : 0));
+        }
+
+        private void CheckOptimalBrightness_CheckedChanged(object? sender, EventArgs e)
+        {
+            ScreenControl.SetOptimalBrightness(checkOptimalBrightness.Checked ? 1 : 0);
         }
 
         private void CheckPerKeyRGB_CheckedChanged(object? sender, EventArgs e)
@@ -485,12 +526,14 @@ namespace GHelper
 
         private void ButtonACPISend_Click(object? sender, EventArgs e)
         {
-            try {
+            try
+            {
                 int deviceID = Convert.ToInt32(textACPICommand.Text, 16);
                 int status = Convert.ToInt32(textACPIParam.Text, textACPIParam.Text.Contains("x") ? 16 : 10);
                 int result = Program.acpi.DeviceSet((uint)deviceID, status, "TestACPI " + deviceID.ToString("X8") + " " + status.ToString("X4"));
                 labelACPITitle.Text = "ACPI DEVS Test : " + result.ToString();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Logger.WriteLine(ex.Message);
             }
@@ -509,6 +552,8 @@ namespace GHelper
 
             if (eCoresMax == 0) eCoresMax = 8;
             if (pCoresMax == 0) pCoresMax = 6;
+
+            if (AppConfig.Is8Ecores()) eCoresMax = Math.Max(8, eCoresMax);
 
             eCoresMax = Math.Max(4, eCoresMax);
             pCoresMax = Math.Max(6, pCoresMax);
@@ -683,46 +728,6 @@ namespace GHelper
                 ProcessHelper.RunAsAdmin("services");
         }
 
-        private void InitVariBright()
-        {
-            try
-            {
-
-                using (var amdControl = new AmdGpuControl())
-                {
-                    int variBrightSupported = 0, VariBrightEnabled;
-                    if (amdControl.GetVariBright(out variBrightSupported, out VariBrightEnabled))
-                    {
-                        Logger.WriteLine("Varibright: " + variBrightSupported + "," + VariBrightEnabled);
-                        checkVariBright.Checked = (VariBrightEnabled == 3);
-                    }
-
-                    checkVariBright.Visible = (variBrightSupported > 0);
-                    checkVariBright.CheckedChanged += CheckVariBright_CheckedChanged;
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.ToString());
-                checkVariBright.Visible = false;
-            }
-
-
-        }
-
-        private void CheckVariBright_CheckedChanged(object? sender, EventArgs e)
-        {
-            using (var amdControl = new AmdGpuControl())
-            {
-                if (NvidiaSmi.GetDisplayActiveStatus()) return; // Skip if Nvidia GPU is active
-                var status = checkVariBright.Checked ? 1 : 0;
-                var result = amdControl.SetVariBright(status);
-                Logger.WriteLine($"VariBright {status}: {result}");
-                ProcessHelper.KillByName("RadeonSoftware");
-            }
-        }
-
         private void CheckGpuApps_CheckedChanged(object? sender, EventArgs e)
         {
             AppConfig.Set("kill_gpu_apps", (checkGpuApps.Checked ? 1 : 0));
@@ -754,7 +759,7 @@ namespace GHelper
         private void CheckNoOverdrive_CheckedChanged(object? sender, EventArgs e)
         {
             AppConfig.Set("no_overdrive", (checkNoOverdrive.Checked ? 1 : 0));
-            screenControl.AutoScreen(true);
+            ScreenControl.AutoScreen(true);
         }
 
 
@@ -792,7 +797,7 @@ namespace GHelper
                 AppConfig.Set("keyboard_awake_bar_bat", (checkBatteryBar.Checked ? 1 : 0));
                 AppConfig.Set("keyboard_awake_lid_bat", (checkBatteryLid.Checked ? 1 : 0));
                 AppConfig.Set("keyboard_awake_logo_bat", (checkBatteryLogo.Checked ? 1 : 0));
-            } 
+            }
 
             Aura.ApplyPower();
 
@@ -815,7 +820,8 @@ namespace GHelper
                 {
                     MaximumSize = new Size(Width, Program.settingsForm.Height);
                     Top = Program.settingsForm.Top;
-                } else
+                }
+                else
                 {
                     Top = top;
                 }
