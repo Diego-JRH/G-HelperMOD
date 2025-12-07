@@ -492,11 +492,9 @@ public static class AppConfig
 
     public static bool IsInvertedFNLock()
     {
-<<<<<<< HEAD
-        return ContainsModel("M140") || ContainsModel("S550") || ContainsModel("P540");
-=======
+
         return ContainsModel("M140") || ContainsModel("S550") || ContainsModel("P540") || ContainsModel("FA401KM");
->>>>>>> upstream/main
+
     }
 
     public static bool IsOLED()
@@ -531,11 +529,9 @@ public static class AppConfig
 
     public static bool IsStrixLimitedRGB()
     {
-<<<<<<< HEAD
-        return ContainsModel("G512LI") || ContainsModel("G513R") || ContainsModel("G713QM") || ContainsModel("G713PV") || ContainsModel("G513IE") || ContainsModel("G713RC") || ContainsModel("G713PU") || ContainsModel("G513QM") || ContainsModel("G513QC") || ContainsModel("G531G") || ContainsModel("G615JMR") || ContainsModel("G815LR");
-=======
+
         return ContainsModel("G614PM") ||  ContainsModel("G614PR") || ContainsModel("G512LI") || ContainsModel("G513R") || ContainsModel("G713QM") || ContainsModel("G713PV") || ContainsModel("G513IE") || ContainsModel("G713RC") || ContainsModel("G713PU") || ContainsModel("G513QM") || ContainsModel("G513QC") || ContainsModel("G531G") || ContainsModel("G615JMR") || ContainsModel("G815LR");
->>>>>>> upstream/main
+
     }
 
     public static bool IsPossible4ZoneRGB()
@@ -629,14 +625,13 @@ public static class AppConfig
         return ContainsModel("G614") || ContainsModel("GU604") || ContainsModel("FX507") || ContainsModel("G513") || ContainsModel("FA617") || ContainsModel("G834") || ContainsModel("GA403") || ContainsModel("GU605") || ContainsModel("GA605") || ContainsModel("GU603VV");
     }
 
-<<<<<<< HEAD
-=======
+
     public static bool IsAlwaysUltimate()
     {
         return ContainsModel("FA507NUR") || ContainsModel("FA506NCR") || ContainsModel("FA507NVR");
     }
 
->>>>>>> upstream/main
+
     public static bool IsManualModeRequired()
     {
         if (!IsMode("auto_apply_power")) return false;
@@ -751,11 +746,9 @@ public static class AppConfig
 
     public static bool IsForceMiniled()
     {
-<<<<<<< HEAD
-        return ContainsModel("G834JYR") || ContainsModel("G834JZR") || ContainsModel("G634JZR") || ContainsModel("G835LW") || Is("force_miniled");
-=======
+
         return ContainsModel("G834JYR") || ContainsModel("G834JZR") || ContainsModel("G634JZR") || ContainsModel("G835LW") || ContainsModel("G635LW") || Is("force_miniled");
->>>>>>> upstream/main
+
     }
     public static bool SaveDimming()
     {
