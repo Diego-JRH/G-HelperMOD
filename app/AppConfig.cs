@@ -422,9 +422,7 @@ public static class AppConfig
 
     public static bool IsHardwareFnLock()
     {
-
-        return IsVivoZenPro() || ContainsModel("GZ302EA") || ContainsModel("FA401K");
-
+        return IsVivoZenPro() || ContainsModel("GZ302EA");
     }
 
     // Devices with bugged bios command to change brightness
@@ -465,11 +463,6 @@ public static class AppConfig
         return ContainsModel("FA617") || ContainsModel("FX507");
     }
 
-    public static bool IsSleepBacklight()
-    {
-        return ContainsModel("FA617") || ContainsModel("FX507");
-    }
-
     public static bool IsAnimeMatrix()
     {
         return ContainsModel("GA401") || ContainsModel("GA402") || ContainsModel("GU604V") || ContainsModel("GU604V") || ContainsModel("G835") || ContainsModel("G815") || ContainsModel("G635") || ContainsModel("G615");
@@ -492,9 +485,7 @@ public static class AppConfig
 
     public static bool IsInvertedFNLock()
     {
-
         return ContainsModel("M140") || ContainsModel("S550") || ContainsModel("P540") || ContainsModel("FA401KM");
-
     }
 
     public static bool IsOLED()
@@ -529,9 +520,7 @@ public static class AppConfig
 
     public static bool IsStrixLimitedRGB()
     {
-
         return ContainsModel("G614PM") ||  ContainsModel("G614PR") || ContainsModel("G512LI") || ContainsModel("G513R") || ContainsModel("G713QM") || ContainsModel("G713PV") || ContainsModel("G513IE") || ContainsModel("G713RC") || ContainsModel("G713PU") || ContainsModel("G513QM") || ContainsModel("G513QC") || ContainsModel("G531G") || ContainsModel("G615JMR") || ContainsModel("G815LR");
-
     }
 
     public static bool IsPossible4ZoneRGB()
@@ -625,12 +614,10 @@ public static class AppConfig
         return ContainsModel("G614") || ContainsModel("GU604") || ContainsModel("FX507") || ContainsModel("G513") || ContainsModel("FA617") || ContainsModel("G834") || ContainsModel("GA403") || ContainsModel("GU605") || ContainsModel("GA605") || ContainsModel("GU603VV");
     }
 
-
     public static bool IsAlwaysUltimate()
     {
         return ContainsModel("FA507NUR") || ContainsModel("FA506NCR") || ContainsModel("FA507NVR");
     }
-
 
     public static bool IsManualModeRequired()
     {
@@ -746,9 +733,7 @@ public static class AppConfig
 
     public static bool IsForceMiniled()
     {
-
         return ContainsModel("G834JYR") || ContainsModel("G834JZR") || ContainsModel("G634JZR") || ContainsModel("G835LW") || ContainsModel("G635LW") || Is("force_miniled");
-
     }
     public static bool SaveDimming()
     {
