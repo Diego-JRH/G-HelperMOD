@@ -98,7 +98,15 @@ namespace GHelper.AutoUpdate
                     {
                         versionUrl = url;
                         update = true;
-                        settings.SetVersionLabel(Properties.Strings.DownloadUpdate + ": " + tag, true);
+
+                        settings.SetVersionLabel(Properties.Strings.DownloadUpdate + $": {appVersion.Major}.{appVersion.Minor}.{appVersion.Build} → {tag}", true);
+
+                        string[] args = Environment.GetCommandLineArgs();
+                        if (force || args.Length > 1 && args[1] == "autoupdate")
+                        {
+                            AutoUpdate(url);
+                            return;
+                        }
 
                         string[] args = Environment.GetCommandLineArgs();
                         if (force || args.Length > 1 && args[1] == "autoupdate")

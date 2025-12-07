@@ -4,10 +4,11 @@ on:
   release:
     types: [ published ]
   workflow_dispatch:
-  
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 jobs:
   release:
@@ -17,14 +18,16 @@ jobs:
     - name: Setup dotnet
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: |
-          8.0.x
+        dotnet-version: '8.0.x'
+
     - name: Publish
       run: |
         dotnet publish app/GHelper.sln --configuration Release --runtime win-x64 -p:PublishSingleFile=true --no-self-contained
+
         powershell Compress-Archive app/bin/x64/Release/net8.0-windows/win-x64/publish/* GHelper.zip
     - name: Upload
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
         gh release upload ${{ github.ref_name }} GHelper.zip
+
