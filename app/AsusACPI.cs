@@ -89,9 +89,6 @@ public class AsusACPI
     public const uint ScreenOptimalBrightness = 0x0005002A;
     public const uint ScreenInit = 0x00050011; // ?
 
-    public const uint ScreenOptimalBrightness = 0x0005002A;
-    public const uint ScreenInit = 0x00050011; // ?
-
     public const uint DevsCPUFan = 0x00110022;
     public const uint DevsGPUFan = 0x00110023;
 
